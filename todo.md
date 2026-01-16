@@ -64,6 +64,15 @@
 - [x] Executar testes e validar todas as correções (76 testes passando)
 - [x] Adicionar ícones e melhorar UX
 
+## WebSocket e Tempo Real
+- [x] Instalar e configurar Socket.io
+- [x] Criar sistema de eventos no servidor
+- [x] Implementar listeners no cliente
+- [x] Criar hooks customizados
+- [x] Integrar nas páginas (componentes criados)
+- [x] Adicionar indicadores visuais (WebSocketStatus)
+- [x] Testar comunicação em tempo real (17 testes passando)
+
 ## Testes e Qualidade
 - [ ] Escrever testes unitários para procedures do tRPC
 - [ ] Escrever testes de integração para APIs externas
