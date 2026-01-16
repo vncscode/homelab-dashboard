@@ -1,32 +1,56 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import type { MySql2Database } from "drizzle-orm/mysql2";
 import { InsertUser, users, jexactylServers, qbittorrentInstances, glancesInstances, InsertJexactylServer, InsertQbittorrentInstance, InsertGlancesInstance, plugins, pluginStats, Plugin, InsertPlugin, PluginStats, InsertPluginStats } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
-let _db: ReturnType<typeof drizzle> | null = null;
+let _db: MySql2Database | null = null;
+let _dbInitialized = false;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
-export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+/**
+ * Lazily create the drizzle instance so local tooling can run without a DB.
+ * Uses singleton pattern to ensure only one connection is created.
+ */
+export async function getDb(): Promise<MySql2Database | null> {
+  if (_dbInitialized) return _db;
+  
+  if (process.env.DATABASE_URL) {
     try {
       _db = drizzle(process.env.DATABASE_URL);
+      _dbInitialized = true;
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.error("[Database] Failed to connect:", error instanceof Error ? error.message : String(error));
       _db = null;
+      _dbInitialized = true;
     }
+  } else {
+    console.warn("[Database] DATABASE_URL not configured");
+    _dbInitialized = true;
   }
+  
   return _db;
 }
 
+/**
+ * Ensure database connection is available, throw if not
+ */
+function ensureDb(db: MySql2Database | null): asserts db is MySql2Database {
+  if (!db) {
+    throw new Error("[Database] Database connection not available");
+  }
+}
+
+/**
+ * Upsert user with proper validation and error handling
+ */
 export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
+  if (!user.openId?.trim()) {
+    throw new Error("User openId is required and cannot be empty");
   }
 
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
+    throw new Error("[Database] Cannot upsert user: database not available");
   }
 
   try {
@@ -41,7 +65,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     const assignNullable = (field: TextField) => {
       const value = user[field];
       if (value === undefined) return;
-      const normalized = value ?? null;
+      const normalized = value?.trim() || null;
       values[field] = normalized;
       updateSet[field] = normalized;
     };
@@ -52,12 +76,13 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
+    
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
+      values.role = "admin";
+      updateSet.role = "admin";
     }
 
     if (!values.lastSignedIn) {
@@ -72,57 +97,149 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       set: updateSet,
     });
   } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
-    throw error;
+    console.error("[Database] Failed to upsert user:", error instanceof Error ? error.message : String(error));
+    throw new Error(`Failed to upsert user: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }
 
-export async function getUserByOpenId(openId: string) {
+/**
+ * Get user by OpenId with proper error handling
+ */
+export async function getUserByOpenId(openId: string): Promise<(typeof users.$inferSelect) | undefined> {
+  if (!openId?.trim()) {
+    return undefined;
+  }
+
   const db = await getDb();
   if (!db) {
     console.warn("[Database] Cannot get user: database not available");
     return undefined;
   }
 
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
+  try {
+    const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error) {
+    console.error("[Database] Failed to get user by openId:", error instanceof Error ? error.message : String(error));
+    return undefined;
+  }
 }
 
-export async function getJexactylServers(userId: number) {
+/**
+ * Get all Jexactyl servers for a user
+ */
+export async function getJexactylServers(userId: number): Promise<(typeof jexactylServers.$inferSelect)[]> {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return [];
+  }
+
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(jexactylServers).where(eq(jexactylServers.userId, userId));
+
+  try {
+    return await db.select().from(jexactylServers).where(eq(jexactylServers.userId, userId));
+  } catch (error) {
+    console.error("[Database] Failed to get Jexactyl servers:", error instanceof Error ? error.message : String(error));
+    return [];
+  }
 }
 
-export async function getQbittorrentInstances(userId: number) {
+/**
+ * Get all qBittorrent instances for a user
+ */
+export async function getQbittorrentInstances(userId: number): Promise<(typeof qbittorrentInstances.$inferSelect)[]> {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return [];
+  }
+
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(qbittorrentInstances).where(eq(qbittorrentInstances.userId, userId));
+
+  try {
+    return await db.select().from(qbittorrentInstances).where(eq(qbittorrentInstances.userId, userId));
+  } catch (error) {
+    console.error("[Database] Failed to get qBittorrent instances:", error instanceof Error ? error.message : String(error));
+    return [];
+  }
 }
 
-export async function getGlancesInstances(userId: number) {
+/**
+ * Get all Glances instances for a user
+ */
+export async function getGlancesInstances(userId: number): Promise<(typeof glancesInstances.$inferSelect)[]> {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return [];
+  }
+
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(glancesInstances).where(eq(glancesInstances.userId, userId));
+
+  try {
+    return await db.select().from(glancesInstances).where(eq(glancesInstances.userId, userId));
+  } catch (error) {
+    console.error("[Database] Failed to get Glances instances:", error instanceof Error ? error.message : String(error));
+    return [];
+  }
 }
 
-export async function createJexactylServer(userId: number, data: InsertJexactylServer) {
+/**
+ * Create a new Jexactyl server with validation
+ */
+export async function createJexactylServer(userId: number, data: InsertJexactylServer): Promise<void> {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new Error("Invalid userId");
+  }
+  if (!data.name?.trim() || !data.apiUrl?.trim()) {
+    throw new Error("Server name and API URL are required");
+  }
+
   const db = await getDb();
-  if (!db) throw new Error('Database not available');
-  await db.insert(jexactylServers).values({ ...data, userId });
+  ensureDb(db);
+
+  try {
+    await db.insert(jexactylServers).values({ ...data, userId });
+  } catch (error) {
+    throw new Error(`Failed to create Jexactyl server: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
 }
 
-export async function updateJexactylServer(id: number, data: Partial<InsertJexactylServer>) {
+/**
+ * Update a Jexactyl server with validation
+ */
+export async function updateJexactylServer(id: number, data: Partial<InsertJexactylServer>): Promise<void> {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Invalid server id");
+  }
+  if (Object.keys(data).length === 0) {
+    throw new Error("No data to update");
+  }
+
   const db = await getDb();
-  if (!db) throw new Error('Database not available');
-  await db.update(jexactylServers).set(data).where(eq(jexactylServers.id, id));
+  ensureDb(db);
+
+  try {
+    await db.update(jexactylServers).set(data).where(eq(jexactylServers.id, id));
+  } catch (error) {
+    throw new Error(`Failed to update Jexactyl server: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
 }
 
-export async function deleteJexactylServer(id: number) {
+/**
+ * Delete a Jexactyl server with validation
+ */
+export async function deleteJexactylServer(id: number): Promise<void> {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Invalid server id");
+  }
+
   const db = await getDb();
-  if (!db) throw new Error('Database not available');
-  await db.delete(jexactylServers).where(eq(jexactylServers.id, id));
+  ensureDb(db);
+
+  try {
+    await db.delete(jexactylServers).where(eq(jexactylServers.id, id));
+  } catch (error) {
+    throw new Error(`Failed to delete Jexactyl server: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
 }
 
 export async function createQbittorrentInstance(userId: number, data: InsertQbittorrentInstance) {
