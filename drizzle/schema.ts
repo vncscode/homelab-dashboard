@@ -159,3 +159,58 @@ export const torrentDownloadHistory = mysqlTable(
 
 export type TorrentDownloadHistory = typeof torrentDownloadHistory.$inferSelect;
 export type InsertTorrentDownloadHistory = typeof torrentDownloadHistory.$inferInsert;
+
+/**
+ * Alert thresholds table for configuring CPU and memory limits
+ */
+export const alertThresholds = mysqlTable(
+  "alert_thresholds",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    instanceId: int("instanceId").notNull(),
+    cpuThreshold: decimal("cpuThreshold", { precision: 5, scale: 2 }).notNull().default("80"),
+    memoryThreshold: decimal("memoryThreshold", { precision: 5, scale: 2 }).notNull().default("85"),
+    diskThreshold: decimal("diskThreshold", { precision: 5, scale: 2 }).notNull().default("90"),
+    isEnabled: int("isEnabled").default(1).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    userInstanceIdx: index("threshold_user_instance_idx").on(table.userId, table.instanceId),
+  })
+);
+
+export type AlertThreshold = typeof alertThresholds.$inferSelect;
+export type InsertAlertThreshold = typeof alertThresholds.$inferInsert;
+
+/**
+ * Alerts history table for tracking triggered alerts
+ */
+export const alerts = mysqlTable(
+  "alerts",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    instanceId: int("instanceId").notNull(),
+    alertType: mysqlEnum("alertType", ["cpu", "memory", "disk"]).notNull(),
+    severity: mysqlEnum("severity", ["warning", "critical"]).notNull(),
+    currentValue: decimal("currentValue", { precision: 5, scale: 2 }).notNull(),
+    threshold: decimal("threshold", { precision: 5, scale: 2 }).notNull(),
+    message: text("message").notNull(),
+    isResolved: int("isResolved").default(0).notNull(),
+    resolvedAt: timestamp("resolvedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    userInstanceIdx: index("alert_user_instance_idx").on(table.userId, table.instanceId),
+    alertTypeIdx: index("alert_type_idx").on(table.alertType),
+    severityIdx: index("severity_idx").on(table.severity),
+    isResolvedIdx: index("is_resolved_idx").on(table.isResolved),
+    createdAtIdx: index("alert_created_at_idx").on(table.createdAt),
+  })
+);
+
+export type Alert = typeof alerts.$inferSelect;
+export type InsertAlert = typeof alerts.$inferInsert;

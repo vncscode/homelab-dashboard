@@ -82,6 +82,15 @@
 - [x] Implementar limpeza automática de dados antigos
 - [x] Testar gráficos e validar dados históricos (106 testes passando)
 
+## Sistema de Alertas
+- [x] Criar schema de banco de dados para alertas e limites
+- [x] Implementar lógica de detecção de alertas
+- [x] Criar routers tRPC para gerenciar alertas e limites
+- [ ] Implementar emissão de alertas via WebSocket
+- [x] Criar componentes de UI para alertas (AlertIndicator)
+- [x] Criar página de configuração de limites (AlertsConfig)
+- [x] Testar sistema de alertas e validar notificações (32 testes passando)
+
 ## Testes e Qualidade
 - [ ] Escrever testes unitários para procedures do tRPC
 - [ ] Escrever testes de integração para APIs externas
