@@ -15,6 +15,13 @@
       "when": 1768605352007,
       "tag": "0001_loving_rage",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1768605949786,
+      "tag": "0002_panoramic_kate_bishop",
+      "breakpoints": true
     }
   ]
 }

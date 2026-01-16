@@ -68,3 +68,34 @@ export const glancesInstances = mysqlTable("glances_instances", {
 
 export type GlancesInstance = typeof glancesInstances.$inferSelect;
 export type InsertGlancesInstance = typeof glancesInstances.$inferInsert;
+
+export const plugins = mysqlTable("plugins", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: mysqlEnum("type", ["jexactyl", "qbittorrent", "glances"]).notNull(),
+  isInstalled: int("isInstalled").default(0).notNull(),
+  isEnabled: int("isEnabled").default(0).notNull(),
+  version: varchar("version", { length: 50 }),
+  description: text("description"),
+  icon: varchar("icon", { length: 255 }),
+  color: varchar("color", { length: 7 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Plugin = typeof plugins.$inferSelect;
+export type InsertPlugin = typeof plugins.$inferInsert;
+
+export const pluginStats = mysqlTable("plugin_stats", {
+  id: int("id").autoincrement().primaryKey(),
+  pluginId: int("pluginId").notNull(),
+  userId: int("userId").notNull(),
+  key: varchar("key", { length: 255 }).notNull(),
+  value: text("value").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PluginStats = typeof pluginStats.$inferSelect;
+export type InsertPluginStats = typeof pluginStats.$inferInsert;

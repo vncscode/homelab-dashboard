@@ -38,8 +38,17 @@
 - [ ] Criar testes para integração Glances
 
 ## Interface de Usuário
-- [ ] Criar componentes reutilizáveis em roxo escuro
-- [ ] Implementar dashboard principal com widgets
+- [x] Criar componentes reutilizáveis em roxo escuro
+- [x] Implementar dashboard principal com widgets
+
+## Sistema de Plugins
+- [x] Criar schema de banco de dados para plugins
+- [x] Implementar sistema de instalação e gerenciamento de plugins
+- [x] Criar página de gerenciamento de plugins
+- [x] Criar página de controle do Jexactyl com resumo
+- [x] Criar página de controle do qBittorrent com resumo
+- [x] Criar página de controle do Glances com resumo
+- [x] Atualizar dashboard com resumo geral de todos os plugins
 - [ ] Implementar página de configurações e credenciais
 - [ ] Implementar página de logs e histórico
 - [ ] Implementar notificações e alertas

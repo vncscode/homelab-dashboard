@@ -5,12 +5,22 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
+import Plugins from "./pages/Plugins";
+import Settings from "./pages/Settings";
+import JexactylControl from "./pages/Services/JexactylControl";
+import QbittorrentControl from "./pages/Services/QbittorrentControl";
+import GlancesControl from "./pages/Services/GlancesControl";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Dashboard} />
+      <Route path={"/plugins"} component={Plugins} />
+      <Route path={"/settings"} component={Settings} />
+      <Route path={"/services/jexactyl"} component={JexactylControl} />
+      <Route path={"/services/qbittorrent"} component={QbittorrentControl} />
+      <Route path={"/services/glances"} component={GlancesControl} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
