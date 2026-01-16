@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, jexactylServers, qbittorrentInstances, glancesInstances } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -87,6 +87,24 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getJexactylServers(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(jexactylServers).where(eq(jexactylServers.userId, userId));
+}
+
+export async function getQbittorrentInstances(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(qbittorrentInstances).where(eq(qbittorrentInstances.userId, userId));
+}
+
+export async function getGlancesInstances(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(glancesInstances).where(eq(glancesInstances.userId, userId));
 }
 
 // TODO: add feature queries here as your schema grows.

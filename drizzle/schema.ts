@@ -25,4 +25,46 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+export const jexactylServers = mysqlTable("jexactyl_servers", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  apiUrl: varchar("apiUrl", { length: 512 }).notNull(),
+  apiKey: text("apiKey").notNull(),
+  serverId: varchar("serverId", { length: 255 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type JexactylServer = typeof jexactylServers.$inferSelect;
+export type InsertJexactylServer = typeof jexactylServers.$inferInsert;
+
+export const qbittorrentInstances = mysqlTable("qbittorrent_instances", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  apiUrl: varchar("apiUrl", { length: 512 }).notNull(),
+  username: varchar("username", { length: 255 }).notNull(),
+  password: text("password").notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type QbittorrentInstance = typeof qbittorrentInstances.$inferSelect;
+export type InsertQbittorrentInstance = typeof qbittorrentInstances.$inferInsert;
+
+export const glancesInstances = mysqlTable("glances_instances", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  apiUrl: varchar("apiUrl", { length: 512 }).notNull(),
+  apiKey: varchar("apiKey", { length: 255 }),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GlancesInstance = typeof glancesInstances.$inferSelect;
+export type InsertGlancesInstance = typeof glancesInstances.$inferInsert;
