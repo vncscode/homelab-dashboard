@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, index } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -99,3 +99,63 @@ export const pluginStats = mysqlTable("plugin_stats", {
 
 export type PluginStats = typeof pluginStats.$inferSelect;
 export type InsertPluginStats = typeof pluginStats.$inferInsert;
+
+/**
+ * Server metrics history table for tracking CPU, memory, and disk usage over time
+ */
+export const serverMetricsHistory = mysqlTable(
+  "server_metrics_history",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    instanceId: int("instanceId").notNull(),
+    cpuPercent: decimal("cpuPercent", { precision: 5, scale: 2 }).notNull(),
+    cpuCores: int("cpuCores").notNull(),
+    memoryUsed: int("memoryUsed").notNull(),
+    memoryTotal: int("memoryTotal").notNull(),
+    memoryPercent: decimal("memoryPercent", { precision: 5, scale: 2 }).notNull(),
+    diskUsed: int("diskUsed").notNull(),
+    diskTotal: int("diskTotal").notNull(),
+    diskPercent: decimal("diskPercent", { precision: 5, scale: 2 }).notNull(),
+    networkBytesIn: int("networkBytesIn").notNull(),
+    networkBytesOut: int("networkBytesOut").notNull(),
+    networkPacketsIn: int("networkPacketsIn").notNull(),
+    networkPacketsOut: int("networkPacketsOut").notNull(),
+    timestamp: timestamp("timestamp").defaultNow().notNull(),
+  },
+  (table) => ({
+    userInstanceIdx: index("user_instance_idx").on(table.userId, table.instanceId),
+    timestampIdx: index("timestamp_idx").on(table.timestamp),
+  })
+);
+
+export type ServerMetricsHistory = typeof serverMetricsHistory.$inferSelect;
+export type InsertServerMetricsHistory = typeof serverMetricsHistory.$inferInsert;
+
+/**
+ * Torrent download history table for tracking progress over time
+ */
+export const torrentDownloadHistory = mysqlTable(
+  "torrent_download_history",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    instanceId: int("instanceId").notNull(),
+    torrentHash: varchar("torrentHash", { length: 255 }).notNull(),
+    torrentName: varchar("torrentName", { length: 512 }).notNull(),
+    progress: decimal("progress", { precision: 5, scale: 2 }).notNull(),
+    downloadSpeed: int("downloadSpeed").notNull(),
+    uploadSpeed: int("uploadSpeed").notNull(),
+    eta: int("eta").notNull(),
+    status: mysqlEnum("status", ["downloading", "seeding", "paused", "stopped", "error"]).notNull(),
+    timestamp: timestamp("timestamp").defaultNow().notNull(),
+  },
+  (table) => ({
+    userInstanceIdx: index("torrent_user_instance_idx").on(table.userId, table.instanceId),
+    torrentHashIdx: index("torrent_hash_idx").on(table.torrentHash),
+    timestampIdx: index("torrent_timestamp_idx").on(table.timestamp),
+  })
+);
+
+export type TorrentDownloadHistory = typeof torrentDownloadHistory.$inferSelect;
+export type InsertTorrentDownloadHistory = typeof torrentDownloadHistory.$inferInsert;

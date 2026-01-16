@@ -73,6 +73,15 @@
 - [x] Adicionar indicadores visuais (WebSocketStatus)
 - [x] Testar comunicação em tempo real (17 testes passando)
 
+## Gráficos e Histórico
+- [x] Criar schema de banco de dados para histórico de métricas
+- [x] Implementar routers tRPC para consultar histórico
+- [x] Criar componentes de gráficos com Recharts
+- [ ] Integrar coleta de histórico via WebSocket
+- [x] Criar página de análise com filtros de período
+- [x] Implementar limpeza automática de dados antigos
+- [x] Testar gráficos e validar dados históricos (106 testes passando)
+
 ## Testes e Qualidade
 - [ ] Escrever testes unitários para procedures do tRPC
 - [ ] Escrever testes de integração para APIs externas
