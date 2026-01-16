@@ -91,6 +91,15 @@
 - [x] Criar página de configuração de limites (AlertsConfig)
 - [x] Testar sistema de alertas e validar notificações (32 testes passando)
 
+## Redesign de Navegação e Home
+- [x] Criar componente de sidebar com navegação
+- [x] Redesenhar home com resumo visual e gráficos
+- [x] Criar página individual do Jexactyl com métricas
+- [x] Criar página individual do qBittorrent com métricas
+- [x] Criar página individual do Glances com métricas
+- [x] Integrar rotas e navegação no App.tsx
+- [ ] Testar navegação e validar layout
+
 ## Testes e Qualidade
 - [ ] Escrever testes unitários para procedures do tRPC
 - [ ] Escrever testes de integração para APIs externas
