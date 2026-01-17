@@ -14,8 +14,8 @@ export const integrationsRouter = router({
         serverId: z.string(),
       }))
       .query(async ({ input }) => {
-        const client = new JexactylClient(input.apiUrl, input.apiKey, input.serverId);
-        return await client.getServerDetails();
+        const client = new JexactylClient({ domain: input.apiUrl, apiToken: input.apiKey });
+        return await client.getServerDetails(input.serverId);
       }),
 
     sendCommand: protectedProcedure
@@ -26,8 +26,8 @@ export const integrationsRouter = router({
         command: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const client = new JexactylClient(input.apiUrl, input.apiKey, input.serverId);
-        await client.sendCommand(input.command);
+        const client = new JexactylClient({ domain: input.apiUrl, apiToken: input.apiKey });
+        await client.sendCommand(input.serverId, input.command as any);
         return { success: true };
       }),
 
@@ -38,8 +38,8 @@ export const integrationsRouter = router({
         serverId: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const client = new JexactylClient(input.apiUrl, input.apiKey, input.serverId);
-        await client.startServer();
+        const client = new JexactylClient({ domain: input.apiUrl, apiToken: input.apiKey });
+        await client.startServer(input.serverId);
         return { success: true };
       }),
 
@@ -50,8 +50,8 @@ export const integrationsRouter = router({
         serverId: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const client = new JexactylClient(input.apiUrl, input.apiKey, input.serverId);
-        await client.stopServer();
+        const client = new JexactylClient({ domain: input.apiUrl, apiToken: input.apiKey });
+        await client.stopServer(input.serverId);
         return { success: true };
       }),
 
@@ -62,8 +62,8 @@ export const integrationsRouter = router({
         serverId: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const client = new JexactylClient(input.apiUrl, input.apiKey, input.serverId);
-        await client.restartServer();
+        const client = new JexactylClient({ domain: input.apiUrl, apiToken: input.apiKey });
+        await client.restartServer(input.serverId);
         return { success: true };
       }),
 
@@ -75,8 +75,8 @@ export const integrationsRouter = router({
         directory: z.string().default('/'),
       }))
       .query(async ({ input }) => {
-        const client = new JexactylClient(input.apiUrl, input.apiKey, input.serverId);
-        return await client.getFiles(input.directory);
+        const client = new JexactylClient({ domain: input.apiUrl, apiToken: input.apiKey });
+        return await client.listFiles(input.serverId, input.directory);
       }),
 
     getFileContents: protectedProcedure
@@ -87,8 +87,8 @@ export const integrationsRouter = router({
         filePath: z.string(),
       }))
       .query(async ({ input }) => {
-        const client = new JexactylClient(input.apiUrl, input.apiKey, input.serverId);
-        return await client.getFileContents(input.filePath);
+        const client = new JexactylClient({ domain: input.apiUrl, apiToken: input.apiKey });
+        return await client.getFileContents(input.serverId, input.filePath);
       }),
 
     writeFileContents: protectedProcedure
@@ -100,8 +100,8 @@ export const integrationsRouter = router({
         contents: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const client = new JexactylClient(input.apiUrl, input.apiKey, input.serverId);
-        await client.writeFileContents(input.filePath, input.contents);
+        const client = new JexactylClient({ domain: input.apiUrl, apiToken: input.apiKey });
+        await client.writeFileContents(input.serverId, input.filePath, input.contents);
         return { success: true };
       }),
 
@@ -113,8 +113,8 @@ export const integrationsRouter = router({
         filePath: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const client = new JexactylClient(input.apiUrl, input.apiKey, input.serverId);
-        await client.deleteFile(input.filePath);
+        const client = new JexactylClient({ domain: input.apiUrl, apiToken: input.apiKey });
+        await client.deleteFile(input.serverId, input.filePath);
         return { success: true };
       }),
   }),

@@ -2,6 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import { jexactylRouter } from "./routers/jexactyl";
 import { analyticsRouter } from "./routers/analytics";
 import { alertsRouter } from "./routers/alerts";
 import { integrationsRouter } from "./routers/integrations";
@@ -20,6 +21,7 @@ export const appRouter = router({
   plugins: pluginsRouter,
   uploads: uploadsRouter,
   editor: editorRouter,
+  jexactyl: jexactylRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

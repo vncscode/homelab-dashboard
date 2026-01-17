@@ -118,6 +118,15 @@
 - [x] Criar modal para abrir e editar arquivos
 - [x] Integrar editor na página de gerenciamento de arquivos
 
+## Integração Real com APIs
+- [x] Implementar listagem automática de servidores Jexactyl
+- [x] Implementar execução remota de comandos (start, stop, restart)
+- [x] Implementar gerenciamento de arquivos (listagem, upload, download, delete, rename, move)
+- [ ] Desenvolver plugin SSH com autenticação por chave
+- [ ] Implementar gerenciamento completo de torrents com qBittorrent
+- [ ] Criar páginas individuais com todas as funcionalidades
+- [ ] Implementar atualização em tempo real com polling/webhooks
+
 ## Testes e Qualidade
 - [ ] Escrever testes unitários para procedures do tRPC
 - [ ] Escrever testes de integração para APIs externas

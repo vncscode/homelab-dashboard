@@ -30,8 +30,8 @@ describe("Jexactyl Client", () => {
     expect(client.restartServer).toBeDefined();
   });
 
-  it("should have getFiles method", () => {
-    expect(client.getFiles).toBeDefined();
+  it("should have listFiles method", () => {
+    expect(client.listFiles).toBeDefined();
   });
 
   it("should have getFileContents method", () => {
