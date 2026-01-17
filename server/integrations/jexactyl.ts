@@ -258,6 +258,8 @@ export class JexactylClient {
    */
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
+      console.log(`[Jexactyl] Testando conexão com: ${this.baseURL}`);
+      
       const response = await this.client.get('/servers', {
         params: { per_page: 1 },
       });
@@ -275,18 +277,29 @@ export class JexactylClient {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      const errorCode = (error as any)?.code || 'UNKNOWN';
       
-      if (errorMessage.includes('ECONNREFUSED')) {
+      console.error(`[Jexactyl] Erro ao conectar: ${errorCode} - ${errorMessage}`);
+      console.error(`[Jexactyl] URL tentada: ${this.baseURL}`);
+      
+      if (errorCode === 'ECONNREFUSED' || errorMessage.includes('ECONNREFUSED')) {
         return {
           success: false,
-          message: 'Nao foi possivel conectar ao dominio. Verifique a URL.',
+          message: 'Conexão recusada. O servidor pode estar offline ou a porta está incorreta.',
         };
       }
       
-      if (errorMessage.includes('ENOTFOUND')) {
+      if (errorCode === 'ENOTFOUND' || errorMessage.includes('ENOTFOUND')) {
         return {
           success: false,
-          message: 'Dominio nao encontrado. Verifique a URL (ex: jexactyl.example.com sem https://)',
+          message: `Dominio nao encontrado: ${this.domain}. Verifique se o dominio esta correto e acessivel.`,
+        };
+      }
+      
+      if (errorCode === 'ETIMEDOUT' || errorMessage.includes('timeout')) {
+        return {
+          success: false,
+          message: 'Timeout na conexão. O servidor está demorando muito para responder.',
         };
       }
       
@@ -300,13 +313,20 @@ export class JexactylClient {
       if (errorMessage.includes('404')) {
         return {
           success: false,
-          message: 'Dominio nao encontrado. Verifique a URL do Jexactyl.',
+          message: 'Endpoint nao encontrado. Verifique se o Jexactyl esta instalado corretamente.',
+        };
+      }
+      
+      if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+        return {
+          success: false,
+          message: 'Acesso negado. Verifique suas permissoes e credenciais.',
         };
       }
       
       return {
         success: false,
-        message: `Erro ao conectar: ${errorMessage}`,
+        message: `Erro ao conectar (${errorCode}): ${errorMessage}`,
       };
     }
   }
