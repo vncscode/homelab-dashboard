@@ -75,121 +75,113 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Jexactyl Card */}
         <Link href="/jexactyl">
-          <a className="block">
-            <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer h-full">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Server className="w-4 h-4 text-blue-500" />
-                  Jexactyl
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+          <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Server className="w-4 h-4 text-blue-500" />
+                Jexactyl
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-2xl font-bold text-accent">
+                  {jexactylStats.activeServers}/{jexactylStats.totalServers}
+                </p>
+                <p className="text-xs text-muted-foreground">Servidores ativos</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <p className="text-2xl font-bold text-accent">
-                    {jexactylStats.activeServers}/{jexactylStats.totalServers}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Servidores ativos</p>
+                  <p className="text-muted-foreground">CPU</p>
+                  <p className="font-semibold">{jexactylStats.avgCpuUsage}%</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <p className="text-muted-foreground">CPU</p>
-                    <p className="font-semibold">{jexactylStats.avgCpuUsage}%</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">RAM</p>
-                    <p className="font-semibold">{jexactylStats.avgMemoryUsage}%</p>
-                  </div>
+                <div>
+                  <p className="text-muted-foreground">RAM</p>
+                  <p className="font-semibold">{jexactylStats.avgMemoryUsage}%</p>
                 </div>
-              </CardContent>
-            </Card>
-          </a>
+              </div>
+            </CardContent>
+          </Card>
         </Link>
 
         {/* qBittorrent Card */}
         <Link href="/qbittorrent">
-          <a className="block">
-            <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer h-full">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Download className="w-4 h-4 text-green-500" />
-                  qBittorrent
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+          <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Download className="w-4 h-4 text-green-500" />
+                qBittorrent
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-2xl font-bold text-accent">
+                  {qbittorrentStats.downloading}
+                </p>
+                <p className="text-xs text-muted-foreground">Baixando agora</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <p className="text-2xl font-bold text-accent">
-                    {qbittorrentStats.downloading}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Baixando agora</p>
+                  <p className="text-muted-foreground">Seedando</p>
+                  <p className="font-semibold">{qbittorrentStats.seeding}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <p className="text-muted-foreground">Seedando</p>
-                    <p className="font-semibold">{qbittorrentStats.seeding}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Velocidade</p>
-                    <p className="font-semibold">{qbittorrentStats.avgDownloadSpeed}</p>
-                  </div>
+                <div>
+                  <p className="text-muted-foreground">Velocidade</p>
+                  <p className="font-semibold">{qbittorrentStats.avgDownloadSpeed}</p>
                 </div>
-              </CardContent>
-            </Card>
-          </a>
+              </div>
+            </CardContent>
+          </Card>
         </Link>
 
         {/* Glances Card */}
         <Link href="/glances">
-          <a className="block">
-            <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer h-full">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-purple-500" />
-                  Glances
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+          <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Activity className="w-4 h-4 text-purple-500" />
+                Glances
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-2xl font-bold text-accent">
+                  {glancesStats.cpuPercent}%
+                </p>
+                <p className="text-xs text-muted-foreground">CPU em uso</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <p className="text-2xl font-bold text-accent">
-                    {glancesStats.cpuPercent}%
-                  </p>
-                  <p className="text-xs text-muted-foreground">CPU em uso</p>
+                  <p className="text-muted-foreground">RAM</p>
+                  <p className="font-semibold">{glancesStats.memoryPercent}%</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <p className="text-muted-foreground">RAM</p>
-                    <p className="font-semibold">{glancesStats.memoryPercent}%</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Disco</p>
-                    <p className="font-semibold">{glancesStats.diskPercent}%</p>
-                  </div>
+                <div>
+                  <p className="text-muted-foreground">Disco</p>
+                  <p className="font-semibold">{glancesStats.diskPercent}%</p>
                 </div>
-              </CardContent>
-            </Card>
-          </a>
+              </div>
+            </CardContent>
+          </Card>
         </Link>
 
         {/* Alerts Card */}
         <Link href="/alerts">
-          <a className="block">
-            <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer h-full">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-500" />
-                  Alertas
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-2xl font-bold text-accent">{recentAlerts.length}</p>
-                  <p className="text-xs text-muted-foreground">Alertas recentes</p>
-                </div>
-                <Button size="sm" className="w-full bg-accent hover:bg-accent/90">
-                  Ver Alertas
-                </Button>
-              </CardContent>
-            </Card>
-          </a>
+          <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-500" />
+                Alertas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-2xl font-bold text-accent">{recentAlerts.length}</p>
+                <p className="text-xs text-muted-foreground">Alertas recentes</p>
+              </div>
+              <Button size="sm" className="w-full bg-accent hover:bg-accent/90">
+                Ver Alertas
+              </Button>
+            </CardContent>
+          </Card>
         </Link>
       </div>
 
@@ -234,11 +226,9 @@ export default function Home() {
               </div>
             </div>
             <Link href="/jexactyl">
-              <a>
-                <Button className="w-full bg-accent hover:bg-accent/90">
-                  Acessar Jexactyl
-                </Button>
-              </a>
+              <Button className="w-full bg-accent hover:bg-accent/90">
+                Acessar Jexactyl
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -280,11 +270,9 @@ export default function Home() {
               </div>
             </div>
             <Link href="/qbittorrent">
-              <a>
-                <Button className="w-full bg-accent hover:bg-accent/90">
-                  Acessar qBittorrent
-                </Button>
-              </a>
+              <Button className="w-full bg-accent hover:bg-accent/90">
+                Acessar qBittorrent
+              </Button>
             </Link>
           </CardContent>
         </Card>
