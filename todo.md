@@ -109,6 +109,15 @@
 - [x] Integrar upload na página do Jexactyl
 - [ ] Testar upload e validar funcionalidades
 
+## Editor de Texto para Configurações
+- [x] Instalar e configurar CodeMirror para editor de código
+- [x] Criar tabelas de banco de dados para histórico de edições
+- [x] Implementar routers tRPC para salvar e recuperar conteúdo de arquivos
+- [x] Criar componente de editor de texto com syntax highlighting
+- [x] Implementar auto-save e histórico de versões
+- [x] Criar modal para abrir e editar arquivos
+- [x] Integrar editor na página de gerenciamento de arquivos
+
 ## Testes e Qualidade
 - [ ] Escrever testes unitários para procedures do tRPC
 - [ ] Escrever testes de integração para APIs externas

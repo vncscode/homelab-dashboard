@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUpload } from "@/components/FileUpload";
+import { CodeEditor } from "@/components/CodeEditor";
 import {
   File,
   Folder,
@@ -11,6 +12,7 @@ import {
   ChevronRight,
   Home,
   Lock,
+  Edit,
 } from "lucide-react";
 
 interface ServerFile {
@@ -28,6 +30,7 @@ interface ServerFile {
 export default function ServerFiles({ serverId }: { serverId: number }) {
   const [currentPath, setCurrentPath] = useState("/");
   const [selectedFiles, setSelectedFiles] = useState<number[]>([]);
+  const [editingFile, setEditingFile] = useState<ServerFile | null>(null);
 
   // Mock server files
   const files: ServerFile[] = [

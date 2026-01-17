@@ -8,6 +8,7 @@ import { integrationsRouter } from "./routers/integrations";
 import { settingsRouter } from "./routers/settings";
 import { pluginsRouter } from "./routers/plugins";
 import { uploadsRouter } from "./routers/uploads";
+import { editorRouter } from "./routers/editor";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -18,6 +19,7 @@ export const appRouter = router({
   settings: settingsRouter,
   plugins: pluginsRouter,
   uploads: uploadsRouter,
+  editor: editorRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

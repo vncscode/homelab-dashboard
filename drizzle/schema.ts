@@ -269,3 +269,51 @@ export const serverFiles = mysqlTable(
 
 export type ServerFile = typeof serverFiles.$inferSelect;
 export type InsertServerFile = typeof serverFiles.$inferInsert;
+
+// File edit history for version control
+export const fileEditHistory = mysqlTable(
+  "file_edit_history",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    serverId: int("serverId").notNull(),
+    filePath: varchar("filePath", { length: 1024 }).notNull(),
+    content: text("content").notNull(),
+    previousContent: text("previousContent"),
+    changeSize: int("changeSize"), // bytes changed
+    editMessage: varchar("editMessage", { length: 512 }), // user's description of changes
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => ({
+    userServerFileIdx: index("edit_user_server_file_idx").on(table.userId, table.serverId, table.filePath),
+    createdAtIdx: index("edit_created_at_idx").on(table.createdAt),
+  })
+);
+
+export type FileEditHistory = typeof fileEditHistory.$inferSelect;
+export type InsertFileEditHistory = typeof fileEditHistory.$inferInsert;
+
+// Current file content cache
+export const fileContent = mysqlTable(
+  "file_content",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    serverId: int("serverId").notNull(),
+    filePath: varchar("filePath", { length: 1024 }).notNull().unique(),
+    content: text("content").notNull(),
+    fileSize: int("fileSize").notNull(),
+    mimeType: varchar("mimeType", { length: 255 }).notNull(),
+    lastEditedBy: int("lastEditedBy"),
+    lastEditedAt: timestamp("lastEditedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    userServerFileIdx: index("content_user_server_file_idx").on(table.userId, table.serverId, table.filePath),
+    updatedAtIdx: index("content_updated_at_idx").on(table.updatedAt),
+  })
+);
+
+export type FileContent = typeof fileContent.$inferSelect;
+export type InsertFileContent = typeof fileContent.$inferInsert;
