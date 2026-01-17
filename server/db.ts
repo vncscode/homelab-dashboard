@@ -1,7 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import type { MySql2Database } from "drizzle-orm/mysql2";
-import { InsertUser, users, jexactylServers, qbittorrentInstances, glancesInstances, cloudflareInstances, uptimeKumaInstances, InsertJexactylServer, InsertQbittorrentInstance, InsertGlancesInstance, InsertCloudflareInstance, InsertUptimeKumaInstance, plugins, pluginStats, Plugin, InsertPlugin, PluginStats, InsertPluginStats } from "../drizzle/schema";
+import { InsertUser, users, jexactylCredentials, jexactylServers, qbittorrentInstances, glancesInstances, cloudflareInstances, uptimeKumaInstances, InsertJexactylCredential, InsertJexactylServer, InsertQbittorrentInstance, InsertGlancesInstance, InsertCloudflareInstance, InsertUptimeKumaInstance, plugins, pluginStats, Plugin, InsertPlugin, PluginStats, InsertPluginStats } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: MySql2Database | null = null;
@@ -126,9 +126,9 @@ export async function getUserByOpenId(openId: string): Promise<(typeof users.$in
 }
 
 /**
- * Get all Jexactyl servers for a user
+ * Get all Jexactyl credentials for a user
  */
-export async function getJexactylServers(userId: number): Promise<(typeof jexactylServers.$inferSelect)[]> {
+export async function getJexactylServers(userId: number): Promise<(typeof jexactylCredentials.$inferSelect)[]> {
   if (!Number.isInteger(userId) || userId <= 0) {
     return [];
   }
@@ -137,9 +137,9 @@ export async function getJexactylServers(userId: number): Promise<(typeof jexact
   if (!db) return [];
 
   try {
-    return await db.select().from(jexactylServers).where(eq(jexactylServers.userId, userId));
+    return await db.select().from(jexactylCredentials).where(eq(jexactylCredentials.userId, userId));
   } catch (error) {
-    console.error("[Database] Failed to get Jexactyl servers:", error instanceof Error ? error.message : String(error));
+    console.error("[Database] Failed to get Jexactyl credentials:", error instanceof Error ? error.message : String(error));
     return [];
   }
 }
@@ -183,9 +183,9 @@ export async function getGlancesInstances(userId: number): Promise<(typeof glanc
 }
 
 /**
- * Create a new Jexactyl server with validation
+ * Create a new Jexactyl credential with validation
  */
-export async function createJexactylServer(userId: number, data: InsertJexactylServer): Promise<void> {
+export async function createJexactylServer(userId: number, data: InsertJexactylCredential): Promise<void> {
   if (!Number.isInteger(userId) || userId <= 0) {
     throw new Error("Invalid userId");
   }
@@ -197,18 +197,18 @@ export async function createJexactylServer(userId: number, data: InsertJexactylS
   ensureDb(db);
 
   try {
-    await db.insert(jexactylServers).values({ ...data, userId });
+    await db.insert(jexactylCredentials).values({ ...data, userId });
   } catch (error) {
     throw new Error(`Failed to create Jexactyl server: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }
 
 /**
- * Update a Jexactyl server with validation
+ * Update a Jexactyl credential with validation
  */
-export async function updateJexactylServer(id: number, data: Partial<InsertJexactylServer>): Promise<void> {
+export async function updateJexactylServer(id: number, data: Partial<InsertJexactylCredential>): Promise<void> {
   if (!Number.isInteger(id) || id <= 0) {
-    throw new Error("Invalid server id");
+    throw new Error("Invalid credential id");
   }
   if (Object.keys(data).length === 0) {
     throw new Error("No data to update");
@@ -218,27 +218,27 @@ export async function updateJexactylServer(id: number, data: Partial<InsertJexac
   ensureDb(db);
 
   try {
-    await db.update(jexactylServers).set(data).where(eq(jexactylServers.id, id));
+    await db.update(jexactylCredentials).set(data).where(eq(jexactylCredentials.id, id));
   } catch (error) {
-    throw new Error(`Failed to update Jexactyl server: ${error instanceof Error ? error.message : "Unknown error"}`);
+    throw new Error(`Failed to update Jexactyl credential: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }
 
 /**
- * Delete a Jexactyl server with validation
+ * Delete a Jexactyl credential with validation
  */
 export async function deleteJexactylServer(id: number): Promise<void> {
   if (!Number.isInteger(id) || id <= 0) {
-    throw new Error("Invalid server id");
+    throw new Error("Invalid credential id");
   }
 
   const db = await getDb();
   ensureDb(db);
 
   try {
-    await db.delete(jexactylServers).where(eq(jexactylServers.id, id));
+    await db.delete(jexactylCredentials).where(eq(jexactylCredentials.id, id));
   } catch (error) {
-    throw new Error(`Failed to delete Jexactyl server: ${error instanceof Error ? error.message : "Unknown error"}`);
+    throw new Error(`Failed to delete Jexactyl credential: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }
 

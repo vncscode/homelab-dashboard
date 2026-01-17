@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, index } from "drizzle-orm/mysql-core";
+import { mysqlTable, int, varchar, text, timestamp, mysqlEnum, index } from 'drizzle-orm/mysql-core';
 
 /**
  * Core user table backing auth flow.
@@ -25,13 +25,39 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-export const jexactylServers = mysqlTable("jexactyl_servers", {
+/**
+ * Jexactyl credentials - stores API connection details
+ */
+export const jexactylCredentials = mysqlTable("jexactyl_credentials", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   domainUrl: varchar("domainUrl", { length: 512 }).notNull(),
   apiKey: text("apiKey").notNull(),
   description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type JexactylCredential = typeof jexactylCredentials.$inferSelect;
+export type InsertJexactylCredential = typeof jexactylCredentials.$inferInsert;
+
+/**
+ * Jexactyl servers - synced from API
+ */
+export const jexactylServers = mysqlTable("jexactyl_servers", {
+  id: int("id").autoincrement().primaryKey(),
+  credentialId: int("credentialId").notNull(),
+  userId: int("userId").notNull(),
+  identifier: varchar("identifier", { length: 255 }).notNull(),
+  uuid: varchar("uuid", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  node: varchar("node", { length: 255 }).notNull(),
+  description: text("description"),
+  status: varchar("status", { length: 50 }),
+  isSuspended: int("isSuspended").default(0).notNull(),
+  isInstalling: int("isInstalling").default(0).notNull(),
+  isTransferring: int("isTransferring").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -99,23 +125,55 @@ export const pluginStats = mysqlTable("plugin_stats", {
 export type PluginStats = typeof pluginStats.$inferSelect;
 export type InsertPluginStats = typeof pluginStats.$inferInsert;
 
-/**
- * Server metrics history table for tracking CPU, memory, and disk usage over time
- */
+export const alerts = mysqlTable(
+  "alerts",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    type: varchar("type", { length: 50 }).notNull(),
+    title: varchar("title", { length: 255 }).notNull(),
+    message: text("message").notNull(),
+    severity: mysqlEnum("severity", ["info", "warning", "error", "critical"]).notNull(),
+    isRead: int("isRead").default(0).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("user_id_idx").on(table.userId),
+    createdAtIdx: index("created_at_idx").on(table.createdAt),
+  })
+);
+
+export type Alert = typeof alerts.$inferSelect;
+export type InsertAlert = typeof alerts.$inferInsert;
+
+export const alertThresholds = mysqlTable("alert_thresholds", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  metricType: varchar("metricType", { length: 50 }).notNull(),
+  threshold: int("threshold").notNull(),
+  isEnabled: int("isEnabled").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AlertThreshold = typeof alertThresholds.$inferSelect;
+export type InsertAlertThreshold = typeof alertThresholds.$inferInsert;
+
 export const serverMetricsHistory = mysqlTable(
   "server_metrics_history",
   {
     id: int("id").autoincrement().primaryKey(),
     userId: int("userId").notNull(),
     instanceId: int("instanceId").notNull(),
-    cpuPercent: decimal("cpuPercent", { precision: 5, scale: 2 }).notNull(),
+    cpuPercent: text("cpuPercent").notNull(),
     cpuCores: int("cpuCores").notNull(),
     memoryUsed: int("memoryUsed").notNull(),
     memoryTotal: int("memoryTotal").notNull(),
-    memoryPercent: decimal("memoryPercent", { precision: 5, scale: 2 }).notNull(),
+    memoryPercent: text("memoryPercent").notNull(),
     diskUsed: int("diskUsed").notNull(),
     diskTotal: int("diskTotal").notNull(),
-    diskPercent: decimal("diskPercent", { precision: 5, scale: 2 }).notNull(),
+    diskPercent: text("diskPercent").notNull(),
     networkBytesIn: int("networkBytesIn").notNull(),
     networkBytesOut: int("networkBytesOut").notNull(),
     networkPacketsIn: int("networkPacketsIn").notNull(),
@@ -131,9 +189,6 @@ export const serverMetricsHistory = mysqlTable(
 export type ServerMetricsHistory = typeof serverMetricsHistory.$inferSelect;
 export type InsertServerMetricsHistory = typeof serverMetricsHistory.$inferInsert;
 
-/**
- * Torrent download history table for tracking progress over time
- */
 export const torrentDownloadHistory = mysqlTable(
   "torrent_download_history",
   {
@@ -141,185 +196,112 @@ export const torrentDownloadHistory = mysqlTable(
     userId: int("userId").notNull(),
     instanceId: int("instanceId").notNull(),
     torrentHash: varchar("torrentHash", { length: 255 }).notNull(),
-    torrentName: varchar("torrentName", { length: 512 }).notNull(),
-    progress: decimal("progress", { precision: 5, scale: 2 }).notNull(),
-    downloadSpeed: int("downloadSpeed").notNull(),
-    uploadSpeed: int("uploadSpeed").notNull(),
+    torrentName: varchar("torrentName", { length: 255 }).notNull(),
+    downloadedBytes: int("downloadedBytes").notNull(),
+    totalBytes: int("totalBytes").notNull(),
+    progress: text("progress").notNull(),
+    downloadRate: int("downloadRate").notNull(),
+    uploadRate: int("uploadRate").notNull(),
     eta: int("eta").notNull(),
-    status: mysqlEnum("status", ["downloading", "seeding", "paused", "stopped", "error"]).notNull(),
     timestamp: timestamp("timestamp").defaultNow().notNull(),
   },
   (table) => ({
-    userInstanceIdx: index("torrent_user_instance_idx").on(table.userId, table.instanceId),
-    torrentHashIdx: index("torrent_hash_idx").on(table.torrentHash),
-    timestampIdx: index("torrent_timestamp_idx").on(table.timestamp),
+    userInstanceIdx: index("user_instance_torrent_idx").on(table.userId, table.instanceId),
+    timestampIdx: index("timestamp_torrent_idx").on(table.timestamp),
   })
 );
 
 export type TorrentDownloadHistory = typeof torrentDownloadHistory.$inferSelect;
 export type InsertTorrentDownloadHistory = typeof torrentDownloadHistory.$inferInsert;
 
-/**
- * Alert thresholds table for configuring CPU and memory limits
- */
-export const alertThresholds = mysqlTable(
-  "alert_thresholds",
-  {
-    id: int("id").autoincrement().primaryKey(),
-    userId: int("userId").notNull(),
-    instanceId: int("instanceId").notNull(),
-    cpuThreshold: decimal("cpuThreshold", { precision: 5, scale: 2 }).notNull().default("80"),
-    memoryThreshold: decimal("memoryThreshold", { precision: 5, scale: 2 }).notNull().default("85"),
-    diskThreshold: decimal("diskThreshold", { precision: 5, scale: 2 }).notNull().default("90"),
-    isEnabled: int("isEnabled").default(1).notNull(),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  },
-  (table) => ({
-    userInstanceIdx: index("threshold_user_instance_idx").on(table.userId, table.instanceId),
-  })
-);
-
-export type AlertThreshold = typeof alertThresholds.$inferSelect;
-export type InsertAlertThreshold = typeof alertThresholds.$inferInsert;
-
-/**
- * Alerts history table for tracking triggered alerts
- */
-export const alerts = mysqlTable(
-  "alerts",
-  {
-    id: int("id").autoincrement().primaryKey(),
-    userId: int("userId").notNull(),
-    instanceId: int("instanceId").notNull(),
-    alertType: mysqlEnum("alertType", ["cpu", "memory", "disk"]).notNull(),
-    severity: mysqlEnum("severity", ["warning", "critical"]).notNull(),
-    currentValue: decimal("currentValue", { precision: 5, scale: 2 }).notNull(),
-    threshold: decimal("threshold", { precision: 5, scale: 2 }).notNull(),
-    message: text("message").notNull(),
-    isResolved: int("isResolved").default(0).notNull(),
-    resolvedAt: timestamp("resolvedAt"),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  },
-  (table) => ({
-    userInstanceIdx: index("alert_user_instance_idx").on(table.userId, table.instanceId),
-    alertTypeIdx: index("alert_type_idx").on(table.alertType),
-    severityIdx: index("severity_idx").on(table.severity),
-    isResolvedIdx: index("is_resolved_idx").on(table.isResolved),
-    createdAtIdx: index("alert_created_at_idx").on(table.createdAt),
-  })
-);
-
-export type Alert = typeof alerts.$inferSelect;
-export type InsertAlert = typeof alerts.$inferInsert;
-
-// File uploads for Jexactyl servers
-export const fileUploads = mysqlTable(
-  "file_uploads",
-  {
-    id: int("id").autoincrement().primaryKey(),
-    userId: int("userId").notNull(),
-    serverId: int("serverId").notNull(),
-    fileName: varchar("fileName", { length: 512 }).notNull(),
-    fileSize: int("fileSize").notNull(), // in bytes
-    filePath: varchar("filePath", { length: 1024 }).notNull(), // path on server
-    mimeType: varchar("mimeType", { length: 255 }).notNull(),
-    s3Key: varchar("s3Key", { length: 512 }), // S3 storage key if applicable
-    s3Url: text("s3Url"), // S3 URL for download
-    status: mysqlEnum("status", ["pending", "uploading", "completed", "failed"]).default("pending").notNull(),
-    progress: int("progress").default(0).notNull(), // 0-100
-    errorMessage: text("errorMessage"),
-    uploadedAt: timestamp("uploadedAt"),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  },
-  (table) => ({
-    userServerIdx: index("upload_user_server_idx").on(table.userId, table.serverId),
-    statusIdx: index("upload_status_idx").on(table.status),
-    createdAtIdx: index("upload_created_at_idx").on(table.createdAt),
-  })
-);
-
-export type FileUpload = typeof fileUploads.$inferSelect;
-export type InsertFileUpload = typeof fileUploads.$inferInsert;
-
-// Server file listings
 export const serverFiles = mysqlTable(
   "server_files",
   {
     id: int("id").autoincrement().primaryKey(),
     userId: int("userId").notNull(),
-    serverId: int("serverId").notNull(),
-    fileName: varchar("fileName", { length: 512 }).notNull(),
-    filePath: varchar("filePath", { length: 1024 }).notNull(),
-    fileSize: int("fileSize").notNull(), // in bytes
-    mimeType: varchar("mimeType", { length: 255 }).notNull(),
+    serverId: varchar("serverId", { length: 255 }).notNull(),
+    fileName: varchar("fileName", { length: 255 }).notNull(),
+    filePath: varchar("filePath", { length: 512 }).notNull(),
+    fileSize: int("fileSize").notNull(),
+    fileType: varchar("fileType", { length: 50 }),
     isDirectory: int("isDirectory").default(0).notNull(),
-    lastModified: timestamp("lastModified"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
   (table) => ({
-    userServerPathIdx: index("file_user_server_path_idx").on(table.userId, table.serverId, table.filePath),
-    createdAtIdx: index("file_created_at_idx").on(table.createdAt),
+    userServerIdx: index("user_server_idx").on(table.userId, table.serverId),
   })
 );
 
 export type ServerFile = typeof serverFiles.$inferSelect;
 export type InsertServerFile = typeof serverFiles.$inferInsert;
 
-// File edit history for version control
-export const fileEditHistory = mysqlTable(
-  "file_edit_history",
+export const fileUploads = mysqlTable(
+  "file_uploads",
   {
     id: int("id").autoincrement().primaryKey(),
     userId: int("userId").notNull(),
-    serverId: int("serverId").notNull(),
-    filePath: varchar("filePath", { length: 1024 }).notNull(),
-    content: text("content").notNull(),
-    previousContent: text("previousContent"),
-    changeSize: int("changeSize"), // bytes changed
-    editMessage: varchar("editMessage", { length: 512 }), // user's description of changes
+    serverId: varchar("serverId", { length: 255 }).notNull(),
+    fileName: varchar("fileName", { length: 255 }).notNull(),
+    filePath: varchar("filePath", { length: 512 }).notNull(),
+    fileSize: int("fileSize").notNull(),
+    uploadedBytes: int("uploadedBytes").notNull(),
+    progress: text("progress").notNull(),
+    status: mysqlEnum("status", ["pending", "uploading", "completed", "failed"]).notNull(),
+    s3Key: varchar("s3Key", { length: 512 }),
+    s3Url: varchar("s3Url", { length: 512 }),
+    errorMessage: text("errorMessage"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
   (table) => ({
-    userServerFileIdx: index("edit_user_server_file_idx").on(table.userId, table.serverId, table.filePath),
-    createdAtIdx: index("edit_created_at_idx").on(table.createdAt),
+    userServerIdx: index("user_server_upload_idx").on(table.userId, table.serverId),
+    statusIdx: index("status_idx").on(table.status),
   })
 );
 
-export type FileEditHistory = typeof fileEditHistory.$inferSelect;
-export type InsertFileEditHistory = typeof fileEditHistory.$inferInsert;
+export type FileUpload = typeof fileUploads.$inferSelect;
+export type InsertFileUpload = typeof fileUploads.$inferInsert;
 
-// Current file content cache
 export const fileContent = mysqlTable(
   "file_content",
   {
     id: int("id").autoincrement().primaryKey(),
     userId: int("userId").notNull(),
-    serverId: int("serverId").notNull(),
-    filePath: varchar("filePath", { length: 1024 }).notNull().unique(),
+    serverId: varchar("serverId", { length: 255 }).notNull(),
+    filePath: varchar("filePath", { length: 512 }).notNull(),
     content: text("content").notNull(),
-    fileSize: int("fileSize").notNull(),
-    mimeType: varchar("mimeType", { length: 255 }).notNull(),
-    lastEditedBy: int("lastEditedBy"),
-    lastEditedAt: timestamp("lastEditedAt"),
+    language: varchar("language", { length: 50 }),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
   (table) => ({
-    userServerFileIdx: index("content_user_server_file_idx").on(table.userId, table.serverId, table.filePath),
-    updatedAtIdx: index("content_updated_at_idx").on(table.updatedAt),
+    userServerFileIdx: index("user_server_file_idx").on(table.userId, table.serverId, table.filePath),
   })
 );
 
 export type FileContent = typeof fileContent.$inferSelect;
 export type InsertFileContent = typeof fileContent.$inferInsert;
 
-/**
- * Cloudflare configuration table for domain management
- */
+export const fileEditHistory = mysqlTable(
+  "file_edit_history",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    serverId: varchar("serverId", { length: 255 }).notNull(),
+    filePath: varchar("filePath", { length: 512 }).notNull(),
+    content: text("content").notNull(),
+    version: int("version").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => ({
+    userServerFileIdx: index("user_server_file_history_idx").on(table.userId, table.serverId, table.filePath),
+  })
+);
+
+export type FileEditHistory = typeof fileEditHistory.$inferSelect;
+export type InsertFileEditHistory = typeof fileEditHistory.$inferInsert;
+
 export const cloudflareInstances = mysqlTable("cloudflare_instances", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -335,9 +317,6 @@ export const cloudflareInstances = mysqlTable("cloudflare_instances", {
 export type CloudflareInstance = typeof cloudflareInstances.$inferSelect;
 export type InsertCloudflareInstance = typeof cloudflareInstances.$inferInsert;
 
-/**
- * Uptime Kuma configuration table for uptime monitoring
- */
 export const uptimeKumaInstances = mysqlTable("uptime_kuma_instances", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),

@@ -92,6 +92,35 @@ export class JexactylClient {
     }
   }
 
+  /**
+   * Get all servers from Jexactyl, handling pagination
+   */
+  async getAllServers(): Promise<JexactylServer[]> {
+    try {
+      const allServers: JexactylServer[] = [];
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { servers, pagination } = await this.getServers(page);
+        allServers.push(...servers);
+
+        // Check if there are more pages
+        if (pagination.current_page && pagination.total_pages) {
+          hasMore = pagination.current_page < pagination.total_pages;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      return allServers;
+    } catch (error) {
+      console.error('Error fetching all servers:', error);
+      throw new Error(`Falha ao listar todos os servidores: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
+  }
+
   async getServerDetails(serverId: string): Promise<JexactylServer> {
     try {
       const response = await this.client.get(`/servers/${serverId}`);
@@ -218,6 +247,58 @@ export class JexactylClient {
     } catch (error) {
       console.error('Error creating folder:', error);
       throw new Error(`Falha ao criar pasta`);
+    }
+  }
+
+  /**
+   * Test connection to Jexactyl API
+   * Validates domain and API token by attempting to fetch servers
+   */
+  async testConnection(): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await this.client.get('/servers', {
+        params: { per_page: 1 },
+      });
+      
+      if (response.status === 200) {
+        return {
+          success: true,
+          message: 'Conexao estabelecida com sucesso',
+        };
+      }
+      
+      return {
+        success: false,
+        message: 'Resposta inesperada do servidor',
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      
+      if (errorMessage.includes('ECONNREFUSED')) {
+        return {
+          success: false,
+          message: 'Nao foi possivel conectar ao dominio. Verifique a URL.',
+        };
+      }
+      
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        return {
+          success: false,
+          message: 'Chave de API invalida. Verifique suas credenciais.',
+        };
+      }
+      
+      if (errorMessage.includes('404')) {
+        return {
+          success: false,
+          message: 'Dominio nao encontrado. Verifique a URL do Jexactyl.',
+        };
+      }
+      
+      return {
+        success: false,
+        message: `Erro ao conectar: ${errorMessage}`,
+      };
     }
   }
 }
