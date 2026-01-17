@@ -58,9 +58,11 @@ export class JexactylClient {
   private client: AxiosInstance;
 
   constructor(config: JexactylConfig) {
-    this.domain = config.domain;
+    // Remove protocol if present
+    let domain = config.domain.replace(/^https?:\/\//i, '');
+    this.domain = domain;
     this.apiToken = config.apiToken;
-    this.baseURL = `https://${this.domain}/api/client`;
+    this.baseURL = `https://${domain}/api/client`;
     
     this.client = axios.create({
       baseURL: this.baseURL,
@@ -278,6 +280,13 @@ export class JexactylClient {
         return {
           success: false,
           message: 'Nao foi possivel conectar ao dominio. Verifique a URL.',
+        };
+      }
+      
+      if (errorMessage.includes('ENOTFOUND')) {
+        return {
+          success: false,
+          message: 'Dominio nao encontrado. Verifique a URL (ex: jexactyl.example.com sem https://)',
         };
       }
       

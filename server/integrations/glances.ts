@@ -84,15 +84,15 @@ export class GlancesClient {
   private apiKey?: string;
 
   constructor(baseUrl: string, apiKey?: string) {
-    // Normalize the URL
-    let normalizedUrl = baseUrl.replace(/\/$/, '');
+    // Remove protocol if present
+    let url = baseUrl.replace(/^https?:\/\//i, '');
+    // Remove trailing slash
+    url = url.replace(/\/$/, '');
     
-    // Add protocol if missing
-    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-      normalizedUrl = `http://${normalizedUrl}`;
-    }
+    // Add protocol
+    const normalizedUrl = `http://${url}`;
 
-    this.baseUrl = normalizedUrl;
+    this.baseUrl = normalizedUrl.replace(/\/$/, '');
     this.apiKey = apiKey;
 
     const headers: Record<string, string> = {

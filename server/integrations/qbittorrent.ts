@@ -57,7 +57,9 @@ export class QbittorrentClient {
   private password?: string;
 
   constructor(config: QbittorrentConfig) {
-    this.baseURL = config.url.endsWith('/') ? config.url : config.url + '/';
+    // Remove protocol if present and normalize URL
+    let url = config.url.replace(/^https?:\/\//i, '');
+    this.baseURL = `http://${url}${url.endsWith('/') ? '' : '/'}`;
     this.username = config.username;
     this.password = config.password;
     
