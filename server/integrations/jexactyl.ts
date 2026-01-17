@@ -256,11 +256,46 @@ export class JexactylClient {
    * Test connection to Jexactyl API
    * Validates domain and API token by attempting to fetch servers
    */
+  private async detectEndpoint(): Promise<string | null> {
+    // Try different possible endpoints
+    const possibleEndpoints = [
+      '/servers',
+      '/api/servers',
+      '/api/client/servers',
+      '/jexactyl/api/client/servers',
+    ];
+
+    for (const endpoint of possibleEndpoints) {
+      try {
+        const response = await this.client.get(endpoint, {
+          params: { per_page: 1 },
+          timeout: 3000,
+        });
+        if (response.status === 200) {
+          console.log(`[Jexactyl] Endpoint detectado: ${endpoint}`);
+          return endpoint;
+        }
+      } catch (error) {
+        // Continue to next endpoint
+      }
+    }
+    return null;
+  }
+
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
       console.log(`[Jexactyl] Testando conexão com: ${this.baseURL}`);
       
-      const response = await this.client.get('/servers', {
+      // Try to detect correct endpoint
+      const endpoint = await this.detectEndpoint();
+      if (!endpoint) {
+        return {
+          success: false,
+          message: 'Não foi possível encontrar o endpoint do Jexactyl. Verifique se a URL está correta e o Jexactyl está rodando.',
+        };
+      }
+      
+      const response = await this.client.get(endpoint, {
         params: { per_page: 1 },
       });
       
@@ -313,7 +348,7 @@ export class JexactylClient {
       if (errorMessage.includes('404')) {
         return {
           success: false,
-          message: 'Endpoint nao encontrado. Verifique se o Jexactyl esta instalado corretamente.',
+          message: 'Endpoint nao encontrado. O Jexactyl pode estar em um subpath diferente ou usar uma versão diferente da API.',
         };
       }
       
