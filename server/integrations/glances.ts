@@ -84,7 +84,15 @@ export class GlancesClient {
   private apiKey?: string;
 
   constructor(baseUrl: string, apiKey?: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
+    // Normalize the URL
+    let normalizedUrl = baseUrl.replace(/\/$/, '');
+    
+    // Add protocol if missing
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = `http://${normalizedUrl}`;
+    }
+
+    this.baseUrl = normalizedUrl;
     this.apiKey = apiKey;
 
     const headers: Record<string, string> = {
@@ -99,60 +107,171 @@ export class GlancesClient {
     this.client = axios.create({
       baseURL: this.baseUrl,
       headers,
+      timeout: 10000,
     });
   }
 
   async getStatus(): Promise<boolean> {
     try {
-      await this.client.get('/api/3/status');
-      return true;
-    } catch {
+      const response = await this.client.get('/api/3/status');
+      return response.status === 200;
+    } catch (error) {
+      console.error('Erro ao verificar status do Glances:', error);
       return false;
     }
   }
 
   async getAllData(): Promise<GlancesData> {
-    const response = await this.client.get('/api/3/all');
-    return response.data;
+    try {
+      const response = await this.client.get('/api/3/all');
+      if (response.status !== 200) {
+        throw new Error(`Erro ao obter dados: ${response.status}`);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao obter todos os dados:', error);
+      throw new Error(`Falha ao obter dados: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   }
 
   async getCPU(): Promise<GlancesCPU> {
-    const response = await this.client.get('/api/3/cpu');
-    return response.data;
+    try {
+      const response = await this.client.get('/api/3/cpu');
+      if (response.status !== 200) {
+        throw new Error(`Erro ao obter CPU: ${response.status}`);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao obter CPU:', error);
+      throw new Error(`Falha ao obter CPU: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   }
 
   async getMemory(): Promise<GlancesMemory> {
-    const response = await this.client.get('/api/3/mem');
-    return response.data;
+    try {
+      const response = await this.client.get('/api/3/mem');
+      if (response.status !== 200) {
+        throw new Error(`Erro ao obter memória: ${response.status}`);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao obter memória:', error);
+      throw new Error(`Falha ao obter memória: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   }
 
   async getDisks(): Promise<GlancesDisk[]> {
-    const response = await this.client.get('/api/3/disks');
-    return response.data;
+    try {
+      const response = await this.client.get('/api/3/disks');
+      if (response.status !== 200) {
+        throw new Error(`Erro ao obter discos: ${response.status}`);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao obter discos:', error);
+      throw new Error(`Falha ao obter discos: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   }
 
   async getNetwork(): Promise<GlancesNetwork[]> {
-    const response = await this.client.get('/api/3/network');
-    return response.data;
+    try {
+      const response = await this.client.get('/api/3/network');
+      if (response.status !== 200) {
+        throw new Error(`Erro ao obter rede: ${response.status}`);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao obter rede:', error);
+      throw new Error(`Falha ao obter rede: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   }
 
   async getProcesses(limit = 10): Promise<GlancesProcess[]> {
-    const response = await this.client.get('/api/3/processlist', {
-      params: { limit },
-    });
-    return response.data;
+    try {
+      const response = await this.client.get('/api/3/processlist', {
+        params: { limit },
+      });
+      if (response.status !== 200) {
+        throw new Error(`Erro ao obter processos: ${response.status}`);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao obter processos:', error);
+      throw new Error(`Falha ao obter processos: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   }
 
   async getProcessesSorted(
     sortBy: 'cpu_percent' | 'memory_percent' = 'cpu_percent',
     limit = 10
   ): Promise<GlancesProcess[]> {
-    const response = await this.client.get('/api/3/processlist', {
-      params: {
-        sort: sortBy,
-        limit,
-      },
-    });
-    return response.data;
+    try {
+      const response = await this.client.get('/api/3/processlist', {
+        params: {
+          sort: sortBy,
+          limit,
+        },
+      });
+      if (response.status !== 200) {
+        throw new Error(`Erro ao obter processos ordenados: ${response.status}`);
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao obter processos ordenados:', error);
+      throw new Error(`Falha ao obter processos: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
+  }
+
+  async testConnection(): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await this.client.get('/api/3/status');
+
+      if (response.status === 200) {
+        return {
+          success: true,
+          message: 'Conexão estabelecida com sucesso',
+        };
+      }
+
+      return {
+        success: false,
+        message: `Erro ao conectar: ${response.status}`,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+
+      if (errorMessage.includes('ECONNREFUSED')) {
+        return {
+          success: false,
+          message: 'Não foi possível conectar. Verifique a URL do Glances.',
+        };
+      }
+
+      if (errorMessage.includes('ENOTFOUND')) {
+        return {
+          success: false,
+          message: 'Domínio não encontrado. Verifique a URL.',
+        };
+      }
+
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        return {
+          success: false,
+          message: 'Chave de API inválida ou não autorizado.',
+        };
+      }
+
+      if (errorMessage.includes('404')) {
+        return {
+          success: false,
+          message: 'API do Glances não encontrada. Verifique a URL e versão do Glances.',
+        };
+      }
+
+      return {
+        success: false,
+        message: `Erro ao conectar: ${errorMessage}`,
+      };
+    }
   }
 }
