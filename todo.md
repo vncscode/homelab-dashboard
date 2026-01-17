@@ -9,6 +9,7 @@
 ## Integração Jexactyl (Gerenciamento de Servidores)
 - [x] Criar tabelas de banco de dados para armazenar credenciais do Jexactyl
 - [x] Implementar endpoints para conectar à API do Jexactyl
+- [x] Remover dados fake - apenas estrutura real mantida
 - [ ] Desenvolver página de gerenciamento de servidores
 - [ ] Implementar visualização de console em tempo real
 - [ ] Implementar envio de comandos (start, stop, restart)
@@ -19,6 +20,7 @@
 ## Integração qBittorrent (Gerenciamento de Torrents)
 - [x] Criar tabelas de banco de dados para armazenar credenciais do qBittorrent
 - [x] Implementar endpoints para conectar à API do qBittorrent
+- [x] Remover dados fake - apenas estrutura real mantida
 - [ ] Desenvolver página de gerenciamento de torrents
 - [ ] Implementar funcionalidade de adicionar torrents
 - [ ] Implementar funcionalidade de pausar/retomar torrents
@@ -30,6 +32,7 @@
 ## Integração Glances (Monitoramento de Recursos)
 - [x] Criar tabelas de banco de dados para armazenar credenciais do Glances
 - [x] Implementar endpoints para conectar à API do Glances
+- [x] Remover dados fake - apenas estrutura real mantida
 - [ ] Desenvolver página de monitoramento de recursos em tempo real
 - [ ] Implementar gráficos de CPU, memória, disco
 - [ ] Implementar monitoramento de processos
