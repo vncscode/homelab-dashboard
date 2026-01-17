@@ -5,10 +5,6 @@ import {
   createJexactylServer,
   updateJexactylServer,
   deleteJexactylServer,
-  getJexactylCredentialById,
-  getJexactylServersByCredential,
-  getAllJexactylServers,
-  syncJexactylServers,
   getQbittorrentInstances,
   createQbittorrentInstance,
   updateQbittorrentInstance,
@@ -26,9 +22,6 @@ import {
   updateUptimeKumaInstance,
   deleteUptimeKumaInstance,
 } from '../db';
-import { JexactylClient } from '../integrations/jexactyl';
-import { QbittorrentClient } from '../integrations/qbittorrent';
-import { GlancesClient } from '../integrations/glances';
 
 export const settingsRouter = router({
   // Jexactyl Settings - Simplified to domain URL and API key only
@@ -41,22 +34,7 @@ export const settingsRouter = router({
       .input(
         z.object({
           name: z.string().min(1),
-          domainUrl: z.string().min(1).refine(
-            (val) => {
-              // Accept URLs with or without protocol
-              if (val.startsWith('http://') || val.startsWith('https://')) {
-                try {
-                  new URL(val);
-                  return true;
-                } catch {
-                  return false;
-                }
-              }
-              // Accept domain-like strings (e.g., example.com, localhost:8080)
-              return /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*(:?\d+)?$/.test(val) || /^localhost(:\d+)?$/.test(val);
-            },
-            { message: 'URL inválida. Use um domínio (ex: example.com) ou URL completa (ex: https://example.com)' }
-          ),
+          domainUrl: z.string().url(),
           apiKey: z.string().min(1),
           description: z.string().optional(),
         })
@@ -71,22 +49,7 @@ export const settingsRouter = router({
         z.object({
           id: z.number(),
           name: z.string().min(1).optional(),
-          domainUrl: z.string().min(1).refine(
-            (val) => {
-              // Accept URLs with or without protocol
-              if (val.startsWith('http://') || val.startsWith('https://')) {
-                try {
-                  new URL(val);
-                  return true;
-                } catch {
-                  return false;
-                }
-              }
-              // Accept domain-like strings (e.g., example.com, localhost:8080)
-              return /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*(:?\d+)?$/.test(val) || /^localhost(:\d+)?$/.test(val);
-            },
-            { message: 'URL inválida. Use um domínio (ex: example.com) ou URL completa (ex: https://example.com)' }
-          ).optional(),
+          domainUrl: z.string().url().optional(),
           apiKey: z.string().min(1).optional(),
           description: z.string().optional(),
         })
@@ -106,100 +69,6 @@ export const settingsRouter = router({
       .mutation(async ({ input }) => {
         await deleteJexactylServer(input.id);
         return { success: true };
-      }),
-
-    sync: protectedProcedure
-      .input(z.object({ credentialId: z.number() }))
-      .mutation(async ({ ctx, input }) => {
-        const credential = await getJexactylCredentialById(input.credentialId);
-        if (!credential) {
-          throw new Error('Credential not found');
-        }
-
-        if (credential.userId !== ctx.user.id) {
-          throw new Error('Unauthorized');
-        }
-
-        try {
-          const client = new JexactylClient({
-            domain: credential.domainUrl,
-            apiToken: credential.apiKey,
-          });
-
-          const servers = await client.getAllServers();
-          const serverData = servers.map(server => ({
-            identifier: server.attributes.identifier,
-            uuid: server.attributes.uuid,
-            name: server.attributes.name,
-            node: server.attributes.node,
-            description: server.attributes.description || null,
-            status: server.attributes.status,
-            isSuspended: server.attributes.is_suspended ? 1 : 0,
-            isInstalling: server.attributes.is_installing ? 1 : 0,
-            isTransferring: server.attributes.is_transferring ? 1 : 0,
-          }));
-
-          await syncJexactylServers(input.credentialId, ctx.user.id, serverData as any);
-          return { success: true, count: servers.length };
-        } catch (error) {
-          throw new Error(`Failed to sync servers: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }),
-
-    getServers: protectedProcedure
-      .input(z.object({ credentialId: z.number() }))
-      .query(async ({ ctx, input }) => {
-        const credential = await getJexactylCredentialById(input.credentialId);
-        if (!credential) {
-          return [];
-        }
-
-        if (credential.userId !== ctx.user.id) {
-          return [];
-        }
-
-        return await getJexactylServersByCredential(input.credentialId);
-      }),
-
-    getAllServers: protectedProcedure.query(async ({ ctx }) => {
-      return await getAllJexactylServers(ctx.user.id);
-    }),
-
-    testConnection: protectedProcedure
-      .input(
-        z.object({
-          domainUrl: z.string().min(1).refine(
-            (val) => {
-              // Accept URLs with or without protocol
-              if (val.startsWith('http://') || val.startsWith('https://')) {
-                try {
-                  new URL(val);
-                  return true;
-                } catch {
-                  return false;
-                }
-              }
-              // Accept domain-like strings (e.g., example.com, localhost:8080)
-              return /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*(:?\d+)?$/.test(val) || /^localhost(:\d+)?$/.test(val);
-            },
-            { message: 'URL inválida. Use um domínio (ex: example.com) ou URL completa (ex: https://example.com)' }
-          ),
-          apiKey: z.string().min(1),
-        })
-      )
-      .mutation(async ({ input }) => {
-        try {
-          const client = new JexactylClient({
-            domain: input.domainUrl,
-            apiToken: input.apiKey,
-          });
-          return await client.testConnection();
-        } catch (error) {
-          return {
-            success: false,
-            message: `Erro ao testar conexão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
-          };
-        }
       }),
   }),
 
@@ -252,30 +121,6 @@ export const settingsRouter = router({
         await deleteQbittorrentInstance(input.id);
         return { success: true };
       }),
-
-    testConnection: protectedProcedure
-      .input(
-        z.object({
-          apiUrl: z.string().url(),
-          username: z.string().min(1),
-          password: z.string().min(1),
-        })
-      )
-      .mutation(async ({ input }) => {
-        try {
-          const client = new QbittorrentClient({
-            url: input.apiUrl,
-            username: input.username,
-            password: input.password,
-          });
-          return await client.testConnection();
-        } catch (error) {
-          return {
-            success: false,
-            message: `Erro ao testar conexão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
-          };
-        }
-      }),
   }),
 
   // Glances Settings
@@ -323,25 +168,6 @@ export const settingsRouter = router({
       .mutation(async ({ input }) => {
         await deleteGlancesInstance(input.id);
         return { success: true };
-      }),
-
-    testConnection: protectedProcedure
-      .input(
-        z.object({
-          apiUrl: z.string().url(),
-          apiKey: z.string().optional(),
-        })
-      )
-      .mutation(async ({ input }) => {
-        try {
-          const client = new GlancesClient(input.apiUrl, input.apiKey);
-          return await client.testConnection();
-        } catch (error) {
-          return {
-            success: false,
-            message: `Erro ao testar conexão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
-          };
-        }
       }),
   }),
 
@@ -393,22 +219,6 @@ export const settingsRouter = router({
       .mutation(async ({ input }) => {
         await deleteCloudflareInstance(input.id);
         return { success: true };
-      }),
-
-    testConnection: protectedProcedure
-      .input(
-        z.object({
-          apiToken: z.string().min(1),
-          accountEmail: z.string().email(),
-        })
-      )
-      .mutation(async () => {
-        // Cloudflare test connection would require making an API call
-        // For now, we'll return a success if credentials are provided
-        return {
-          success: true,
-          message: 'Credenciais validadas (teste completo requer sincronização)',
-        };
       }),
   }),
 

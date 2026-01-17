@@ -7,10 +7,7 @@ describe("Jexactyl Client", () => {
   let client: JexactylClient;
 
   beforeEach(() => {
-    client = new JexactylClient({
-      domain: "localhost:8080",
-      apiToken: "test-api-key",
-    });
+    client = new JexactylClient("http://localhost:8080", "test-api-key", "test-server-id");
   });
 
   it("should initialize with correct credentials", () => {
@@ -49,12 +46,13 @@ describe("Jexactyl Client", () => {
     expect(client.deleteFile).toBeDefined();
   });
 });
+
 describe("qBittorrent Client", () => {
   let client: QbittorrentClient;
 
   beforeEach(() => {
     client = new QbittorrentClient({
-      url: "http://localhost:8080",
+      url: "http://localhost:6800",
       username: "admin",
       password: "admin",
     });
@@ -101,7 +99,7 @@ describe("Glances Client", () => {
   let client: GlancesClient;
 
   beforeEach(() => {
-    client = new GlancesClient("http://localhost:61208", "test-api-key");
+    client = new GlancesClient("http://localhost:61208");
   });
 
   it("should initialize with correct URL", () => {

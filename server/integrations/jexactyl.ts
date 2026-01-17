@@ -58,11 +58,9 @@ export class JexactylClient {
   private client: AxiosInstance;
 
   constructor(config: JexactylConfig) {
-    // Remove protocol if present
-    let domain = config.domain.replace(/^https?:\/\//i, '');
-    this.domain = domain;
+    this.domain = config.domain;
     this.apiToken = config.apiToken;
-    this.baseURL = `https://${domain}/api/client`;
+    this.baseURL = `https://${this.domain}/api/client`;
     
     this.client = axios.create({
       baseURL: this.baseURL,
@@ -75,14 +73,13 @@ export class JexactylClient {
     return {
       'Authorization': `Bearer ${this.apiToken}`,
       'Content-Type': 'application/json',
-      'Accept': 'application/vnd.pterodactyl.v1+json',
+      'Accept': 'application/json',
     };
   }
 
   async getServers(page: number = 1): Promise<{ servers: JexactylServer[]; pagination: any }> {
     try {
-      // Endpoint correto: GET /api/client
-      const response = await this.client.get('', {
+      const response = await this.client.get('/servers', {
         params: { page, per_page: 50 },
       });
       return {
@@ -259,10 +256,7 @@ export class JexactylClient {
    */
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
-      console.log(`[Jexactyl] Testando conexão com: ${this.baseURL}`);
-      
-      // Endpoint correto conforme documentação oficial: GET /api/client
-      const response = await this.client.get('', {
+      const response = await this.client.get('/servers', {
         params: { per_page: 1 },
       });
       
@@ -279,29 +273,11 @@ export class JexactylClient {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      const errorCode = (error as any)?.code || 'UNKNOWN';
       
-      console.error(`[Jexactyl] Erro ao conectar: ${errorCode} - ${errorMessage}`);
-      console.error(`[Jexactyl] URL tentada: ${this.baseURL}`);
-      
-      if (errorCode === 'ECONNREFUSED' || errorMessage.includes('ECONNREFUSED')) {
+      if (errorMessage.includes('ECONNREFUSED')) {
         return {
           success: false,
-          message: 'Conexão recusada. O servidor pode estar offline ou a porta está incorreta.',
-        };
-      }
-      
-      if (errorCode === 'ENOTFOUND' || errorMessage.includes('ENOTFOUND')) {
-        return {
-          success: false,
-          message: `Dominio nao encontrado: ${this.domain}. Verifique se o dominio esta correto e acessivel.`,
-        };
-      }
-      
-      if (errorCode === 'ETIMEDOUT' || errorMessage.includes('timeout')) {
-        return {
-          success: false,
-          message: 'Timeout na conexão. O servidor está demorando muito para responder.',
+          message: 'Nao foi possivel conectar ao dominio. Verifique a URL.',
         };
       }
       
@@ -315,20 +291,13 @@ export class JexactylClient {
       if (errorMessage.includes('404')) {
         return {
           success: false,
-          message: 'Endpoint não encontrado (404). Verifique se o Jexactyl está corretamente instalado e a URL está correta.',
-        };
-      }
-      
-      if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
-        return {
-          success: false,
-          message: 'Acesso negado. Verifique suas permissoes e credenciais.',
+          message: 'Dominio nao encontrado. Verifique a URL do Jexactyl.',
         };
       }
       
       return {
         success: false,
-        message: `Erro ao conectar (${errorCode}): ${errorMessage}`,
+        message: `Erro ao conectar: ${errorMessage}`,
       };
     }
   }
