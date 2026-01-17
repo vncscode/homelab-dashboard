@@ -109,24 +109,24 @@ export function Sidebar() {
               const active = isActive(item.href);
 
               return (
-                <Link key={item.href} href={item.href}>
-                  <a
-                    onClick={() => setIsOpen(false)}
-                    className={cn(
-                      "flex items-start gap-3 px-4 py-3 rounded-lg transition-colors duration-200",
-                      active
-                        ? "bg-accent/10 text-accent border border-accent/20"
-                        : "text-muted-foreground hover:bg-accent/5 hover:text-foreground"
-                    )}
-                  >
-                    <Icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{item.label}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {item.description}
-                      </p>
-                    </div>
-                  </a>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-start gap-3 px-4 py-3 rounded-lg transition-colors duration-200 block",
+                    active
+                      ? "bg-accent/10 text-accent border border-accent/20"
+                      : "text-muted-foreground hover:bg-accent/5 hover:text-foreground"
+                  )}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{item.label}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {item.description}
+                    </p>
+                  </div>
                 </Link>
               );
             })}
