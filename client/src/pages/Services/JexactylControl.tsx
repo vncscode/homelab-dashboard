@@ -102,7 +102,7 @@ export default function JexactylControl() {
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle>{server.name}</CardTitle>
-                        <CardDescription>{server.apiUrl}</CardDescription>
+                        <CardDescription>{server.domainUrl}</CardDescription>
                       </div>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline">
@@ -116,7 +116,7 @@ export default function JexactylControl() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm">
-                      <p><span className="text-muted-foreground">ID:</span> {server.serverId}</p>
+                      <p><span className="text-muted-foreground">Domínio:</span> {server.domainUrl}</p>
                       {server.description && (
                         <p><span className="text-muted-foreground">Descrição:</span> {server.description}</p>
                       )}

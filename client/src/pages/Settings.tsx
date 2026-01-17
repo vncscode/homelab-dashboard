@@ -118,7 +118,7 @@ export default function Settings() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className="font-semibold text-foreground">{server.name}</h4>
-                        <p className="text-sm text-muted-foreground mt-1">{server.apiUrl}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{server.domainUrl}</p>
                         {server.description && (
                           <p className="text-sm text-muted-foreground mt-2">{server.description}</p>
                         )}

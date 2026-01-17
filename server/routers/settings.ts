@@ -24,7 +24,7 @@ import {
 } from '../db';
 
 export const settingsRouter = router({
-  // Jexactyl Settings
+  // Jexactyl Settings - Simplified to domain URL and API key only
   jexactyl: router({
     list: protectedProcedure.query(async ({ ctx }) => {
       return await getJexactylServers(ctx.user.id);
@@ -34,9 +34,8 @@ export const settingsRouter = router({
       .input(
         z.object({
           name: z.string().min(1),
-          apiUrl: z.string().url(),
+          domainUrl: z.string().url(),
           apiKey: z.string().min(1),
-          serverId: z.string().min(1),
           description: z.string().optional(),
         })
       )
@@ -50,18 +49,16 @@ export const settingsRouter = router({
         z.object({
           id: z.number(),
           name: z.string().min(1).optional(),
-          apiUrl: z.string().url().optional(),
+          domainUrl: z.string().url().optional(),
           apiKey: z.string().min(1).optional(),
-          serverId: z.string().min(1).optional(),
           description: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {
         await updateJexactylServer(input.id, {
           name: input.name,
-          apiUrl: input.apiUrl,
+          domainUrl: input.domainUrl,
           apiKey: input.apiKey,
-          serverId: input.serverId,
           description: input.description,
         });
         return { success: true };

@@ -189,8 +189,8 @@ export async function createJexactylServer(userId: number, data: InsertJexactylS
   if (!Number.isInteger(userId) || userId <= 0) {
     throw new Error("Invalid userId");
   }
-  if (!data.name?.trim() || !data.apiUrl?.trim()) {
-    throw new Error("Server name and API URL are required");
+  if (!data.name?.trim() || !data.domainUrl?.trim()) {
+    throw new Error("Server name and domain URL are required");
   }
 
   const db = await getDb();

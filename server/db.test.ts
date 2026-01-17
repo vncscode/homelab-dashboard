@@ -118,20 +118,20 @@ describe("Database Operations", () => {
 
     it("should throw error for missing name", async () => {
       await expect(
-        createJexactylServer(1, { name: "", apiUrl: "http://test.com", apiKey: "key" } as any)
-      ).rejects.toThrow("Server name and API URL are required");
+        createJexactylServer(1, { name: "", domainUrl: "http://test.com", apiKey: "key" } as any)
+      ).rejects.toThrow("Server name and domain URL are required");
     });
 
-    it("should throw error for missing apiUrl", async () => {
+    it("should throw error for missing domainUrl", async () => {
       await expect(
-        createJexactylServer(1, { name: "Test", apiUrl: "", apiKey: "key" } as any)
-      ).rejects.toThrow("Server name and API URL are required");
+        createJexactylServer(1, { name: "Test", domainUrl: "", apiKey: "key" } as any)
+      ).rejects.toThrow("Server name and domain URL are required");
     });
 
     it("should throw error for null name", async () => {
       await expect(
-        createJexactylServer(1, { name: null as any, apiUrl: "http://test.com", apiKey: "key" } as any)
-      ).rejects.toThrow("Server name and API URL are required");
+        createJexactylServer(1, { name: null as any, domainUrl: "http://test.com", apiKey: "key" } as any)
+      ).rejects.toThrow("Server name and domain URL are required");
     });
   });
 

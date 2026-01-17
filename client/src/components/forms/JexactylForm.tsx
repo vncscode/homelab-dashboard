@@ -13,9 +13,8 @@ interface JexactylFormProps {
 export function JexactylForm({ onSuccess }: JexactylFormProps) {
   const [formData, setFormData] = useState({
     name: "",
-    apiUrl: "",
+    domainUrl: "",
     apiKey: "",
-    serverId: "",
     description: "",
   });
 
@@ -25,7 +24,7 @@ export function JexactylForm({ onSuccess }: JexactylFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name.trim() || !formData.apiUrl.trim() || !formData.apiKey.trim() || !formData.serverId.trim()) {
+    if (!formData.name.trim() || !formData.domainUrl.trim() || !formData.apiKey.trim()) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos obrigatórios",
@@ -42,9 +41,8 @@ export function JexactylForm({ onSuccess }: JexactylFormProps) {
       });
       setFormData({
         name: "",
-        apiUrl: "",
+        domainUrl: "",
         apiKey: "",
-        serverId: "",
         description: "",
       });
       onSuccess?.();
@@ -75,12 +73,12 @@ export function JexactylForm({ onSuccess }: JexactylFormProps) {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground">URL da API</label>
+            <label className="text-sm font-medium text-foreground">URL do Domínio</label>
             <Input
-              placeholder="Ex: https://jexactyl.example.com/api"
+              placeholder="Ex: https://jexactyl.example.com"
               type="url"
-              value={formData.apiUrl}
-              onChange={(e) => setFormData({ ...formData, apiUrl: e.target.value })}
+              value={formData.domainUrl}
+              onChange={(e) => setFormData({ ...formData, domainUrl: e.target.value })}
               className="mt-1"
             />
           </div>
@@ -92,16 +90,6 @@ export function JexactylForm({ onSuccess }: JexactylFormProps) {
               type="password"
               value={formData.apiKey}
               onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-foreground">ID do Servidor</label>
-            <Input
-              placeholder="Ex: 1"
-              value={formData.serverId}
-              onChange={(e) => setFormData({ ...formData, serverId: e.target.value })}
               className="mt-1"
             />
           </div>
