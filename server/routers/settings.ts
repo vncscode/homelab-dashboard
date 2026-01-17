@@ -13,6 +13,14 @@ import {
   createGlancesInstance,
   updateGlancesInstance,
   deleteGlancesInstance,
+  getCloudflareInstances,
+  createCloudflareInstance,
+  updateCloudflareInstance,
+  deleteCloudflareInstance,
+  getUptimeKumaInstances,
+  createUptimeKumaInstance,
+  updateUptimeKumaInstance,
+  deleteUptimeKumaInstance,
 } from '../db';
 
 export const settingsRouter = router({
@@ -162,6 +170,105 @@ export const settingsRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteGlancesInstance(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // Cloudflare Settings
+  cloudflare: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getCloudflareInstances(ctx.user.id);
+    }),
+
+    create: protectedProcedure
+      .input(
+        z.object({
+          name: z.string().min(1),
+          apiToken: z.string().min(1),
+          accountId: z.string().min(1),
+          accountEmail: z.string().email(),
+          description: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        await createCloudflareInstance(ctx.user.id, input as any);
+        return { success: true };
+      }),
+
+    update: protectedProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          name: z.string().min(1).optional(),
+          apiToken: z.string().min(1).optional(),
+          accountId: z.string().min(1).optional(),
+          accountEmail: z.string().email().optional(),
+          description: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await updateCloudflareInstance(input.id, {
+          name: input.name,
+          apiToken: input.apiToken,
+          accountId: input.accountId,
+          accountEmail: input.accountEmail,
+          description: input.description,
+        });
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteCloudflareInstance(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // Uptime Kuma Settings
+  uptimeKuma: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getUptimeKumaInstances(ctx.user.id);
+    }),
+
+    create: protectedProcedure
+      .input(
+        z.object({
+          name: z.string().min(1),
+          apiUrl: z.string().url(),
+          apiKey: z.string().min(1),
+          description: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        await createUptimeKumaInstance(ctx.user.id, input as any);
+        return { success: true };
+      }),
+
+    update: protectedProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          name: z.string().min(1).optional(),
+          apiUrl: z.string().url().optional(),
+          apiKey: z.string().min(1).optional(),
+          description: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await updateUptimeKumaInstance(input.id, {
+          name: input.name,
+          apiUrl: input.apiUrl,
+          apiKey: input.apiKey,
+          description: input.description,
+        });
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteUptimeKumaInstance(input.id);
         return { success: true };
       }),
   }),

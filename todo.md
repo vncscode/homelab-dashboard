@@ -52,7 +52,7 @@
 - [x] Criar página de controle do qBittorrent com resumo
 - [x] Criar página de controle do Glances com resumo
 - [x] Atualizar dashboard com resumo geral de todos os plugins
-- [ ] Implementar página de configurações e credenciais
+- [x] Implementar página de configurações e credenciais (Jexactyl, qBittorrent, Glances, Cloudflare, Uptime Kuma)
 - [ ] Implementar página de logs e histórico
 - [ ] Implementar notificações e alertas
 - [ ] Implementar tema responsivo (mobile, tablet, desktop)

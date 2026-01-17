@@ -317,3 +317,38 @@ export const fileContent = mysqlTable(
 
 export type FileContent = typeof fileContent.$inferSelect;
 export type InsertFileContent = typeof fileContent.$inferInsert;
+
+/**
+ * Cloudflare configuration table for domain management
+ */
+export const cloudflareInstances = mysqlTable("cloudflare_instances", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  apiToken: text("apiToken").notNull(),
+  accountId: varchar("accountId", { length: 255 }).notNull(),
+  accountEmail: varchar("accountEmail", { length: 320 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CloudflareInstance = typeof cloudflareInstances.$inferSelect;
+export type InsertCloudflareInstance = typeof cloudflareInstances.$inferInsert;
+
+/**
+ * Uptime Kuma configuration table for uptime monitoring
+ */
+export const uptimeKumaInstances = mysqlTable("uptime_kuma_instances", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  apiUrl: varchar("apiUrl", { length: 512 }).notNull(),
+  apiKey: text("apiKey").notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UptimeKumaInstance = typeof uptimeKumaInstances.$inferSelect;
+export type InsertUptimeKumaInstance = typeof uptimeKumaInstances.$inferInsert;

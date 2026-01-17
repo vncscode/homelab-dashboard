@@ -1,7 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import type { MySql2Database } from "drizzle-orm/mysql2";
-import { InsertUser, users, jexactylServers, qbittorrentInstances, glancesInstances, InsertJexactylServer, InsertQbittorrentInstance, InsertGlancesInstance, plugins, pluginStats, Plugin, InsertPlugin, PluginStats, InsertPluginStats } from "../drizzle/schema";
+import { InsertUser, users, jexactylServers, qbittorrentInstances, glancesInstances, cloudflareInstances, uptimeKumaInstances, InsertJexactylServer, InsertQbittorrentInstance, InsertGlancesInstance, InsertCloudflareInstance, InsertUptimeKumaInstance, plugins, pluginStats, Plugin, InsertPlugin, PluginStats, InsertPluginStats } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: MySql2Database | null = null;
@@ -276,6 +276,164 @@ export async function deleteGlancesInstance(id: number) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   await db.delete(glancesInstances).where(eq(glancesInstances.id, id));
+}
+
+/**
+ * Get all Cloudflare instances for a user
+ */
+export async function getCloudflareInstances(userId: number): Promise<(typeof cloudflareInstances.$inferSelect)[]> {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return [];
+  }
+
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select().from(cloudflareInstances).where(eq(cloudflareInstances.userId, userId));
+  } catch (error) {
+    console.error("[Database] Failed to get Cloudflare instances:", error instanceof Error ? error.message : String(error));
+    return [];
+  }
+}
+
+/**
+ * Create a new Cloudflare instance with validation
+ */
+export async function createCloudflareInstance(userId: number, data: InsertCloudflareInstance): Promise<void> {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new Error("Invalid userId");
+  }
+  if (!data.name?.trim() || !data.apiToken?.trim()) {
+    throw new Error("Instance name and API token are required");
+  }
+
+  const db = await getDb();
+  ensureDb(db);
+
+  try {
+    await db.insert(cloudflareInstances).values({ ...data, userId });
+  } catch (error) {
+    throw new Error(`Failed to create Cloudflare instance: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+/**
+ * Update a Cloudflare instance with validation
+ */
+export async function updateCloudflareInstance(id: number, data: Partial<InsertCloudflareInstance>): Promise<void> {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Invalid instance id");
+  }
+  if (Object.keys(data).length === 0) {
+    throw new Error("No data to update");
+  }
+
+  const db = await getDb();
+  ensureDb(db);
+
+  try {
+    await db.update(cloudflareInstances).set(data).where(eq(cloudflareInstances.id, id));
+  } catch (error) {
+    throw new Error(`Failed to update Cloudflare instance: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+/**
+ * Delete a Cloudflare instance with validation
+ */
+export async function deleteCloudflareInstance(id: number): Promise<void> {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Invalid instance id");
+  }
+
+  const db = await getDb();
+  ensureDb(db);
+
+  try {
+    await db.delete(cloudflareInstances).where(eq(cloudflareInstances.id, id));
+  } catch (error) {
+    throw new Error(`Failed to delete Cloudflare instance: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+/**
+ * Get all Uptime Kuma instances for a user
+ */
+export async function getUptimeKumaInstances(userId: number): Promise<(typeof uptimeKumaInstances.$inferSelect)[]> {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return [];
+  }
+
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select().from(uptimeKumaInstances).where(eq(uptimeKumaInstances.userId, userId));
+  } catch (error) {
+    console.error("[Database] Failed to get Uptime Kuma instances:", error instanceof Error ? error.message : String(error));
+    return [];
+  }
+}
+
+/**
+ * Create a new Uptime Kuma instance with validation
+ */
+export async function createUptimeKumaInstance(userId: number, data: InsertUptimeKumaInstance): Promise<void> {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new Error("Invalid userId");
+  }
+  if (!data.name?.trim() || !data.apiUrl?.trim()) {
+    throw new Error("Instance name and API URL are required");
+  }
+
+  const db = await getDb();
+  ensureDb(db);
+
+  try {
+    await db.insert(uptimeKumaInstances).values({ ...data, userId });
+  } catch (error) {
+    throw new Error(`Failed to create Uptime Kuma instance: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+/**
+ * Update an Uptime Kuma instance with validation
+ */
+export async function updateUptimeKumaInstance(id: number, data: Partial<InsertUptimeKumaInstance>): Promise<void> {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Invalid instance id");
+  }
+  if (Object.keys(data).length === 0) {
+    throw new Error("No data to update");
+  }
+
+  const db = await getDb();
+  ensureDb(db);
+
+  try {
+    await db.update(uptimeKumaInstances).set(data).where(eq(uptimeKumaInstances.id, id));
+  } catch (error) {
+    throw new Error(`Failed to update Uptime Kuma instance: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+/**
+ * Delete an Uptime Kuma instance with validation
+ */
+export async function deleteUptimeKumaInstance(id: number): Promise<void> {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Invalid instance id");
+  }
+
+  const db = await getDb();
+  ensureDb(db);
+
+  try {
+    await db.delete(uptimeKumaInstances).where(eq(uptimeKumaInstances.id, id));
+  } catch (error) {
+    throw new Error(`Failed to delete Uptime Kuma instance: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
 }
 
 export async function getPlugins(userId: number) {

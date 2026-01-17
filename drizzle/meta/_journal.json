@@ -50,6 +50,13 @@
       "when": 1768608103678,
       "tag": "0006_organic_loa",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1768610361969,
+      "tag": "0007_chubby_black_panther",
+      "breakpoints": true
     }
   ]
 }
