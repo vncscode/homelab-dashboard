@@ -100,6 +100,15 @@
 - [x] Integrar rotas e navegação no App.tsx
 - [ ] Testar navegação e validar layout
 
+## Upload de Arquivos para Jexactyl
+- [x] Criar tabelas de banco de dados para gerenciar uploads
+- [x] Implementar routers tRPC para upload e gerenciamento de arquivos
+- [x] Criar componente de upload com drag-and-drop
+- [x] Implementar progresso de upload em tempo real
+- [x] Criar página de gerenciamento de arquivos do servidor
+- [x] Integrar upload na página do Jexactyl
+- [ ] Testar upload e validar funcionalidades
+
 ## Testes e Qualidade
 - [ ] Escrever testes unitários para procedures do tRPC
 - [ ] Escrever testes de integração para APIs externas

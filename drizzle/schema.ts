@@ -214,3 +214,58 @@ export const alerts = mysqlTable(
 
 export type Alert = typeof alerts.$inferSelect;
 export type InsertAlert = typeof alerts.$inferInsert;
+
+// File uploads for Jexactyl servers
+export const fileUploads = mysqlTable(
+  "file_uploads",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    serverId: int("serverId").notNull(),
+    fileName: varchar("fileName", { length: 512 }).notNull(),
+    fileSize: int("fileSize").notNull(), // in bytes
+    filePath: varchar("filePath", { length: 1024 }).notNull(), // path on server
+    mimeType: varchar("mimeType", { length: 255 }).notNull(),
+    s3Key: varchar("s3Key", { length: 512 }), // S3 storage key if applicable
+    s3Url: text("s3Url"), // S3 URL for download
+    status: mysqlEnum("status", ["pending", "uploading", "completed", "failed"]).default("pending").notNull(),
+    progress: int("progress").default(0).notNull(), // 0-100
+    errorMessage: text("errorMessage"),
+    uploadedAt: timestamp("uploadedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    userServerIdx: index("upload_user_server_idx").on(table.userId, table.serverId),
+    statusIdx: index("upload_status_idx").on(table.status),
+    createdAtIdx: index("upload_created_at_idx").on(table.createdAt),
+  })
+);
+
+export type FileUpload = typeof fileUploads.$inferSelect;
+export type InsertFileUpload = typeof fileUploads.$inferInsert;
+
+// Server file listings
+export const serverFiles = mysqlTable(
+  "server_files",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    serverId: int("serverId").notNull(),
+    fileName: varchar("fileName", { length: 512 }).notNull(),
+    filePath: varchar("filePath", { length: 1024 }).notNull(),
+    fileSize: int("fileSize").notNull(), // in bytes
+    mimeType: varchar("mimeType", { length: 255 }).notNull(),
+    isDirectory: int("isDirectory").default(0).notNull(),
+    lastModified: timestamp("lastModified"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    userServerPathIdx: index("file_user_server_path_idx").on(table.userId, table.serverId, table.filePath),
+    createdAtIdx: index("file_created_at_idx").on(table.createdAt),
+  })
+);
+
+export type ServerFile = typeof serverFiles.$inferSelect;
+export type InsertServerFile = typeof serverFiles.$inferInsert;

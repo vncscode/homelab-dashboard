@@ -4,13 +4,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Server,
   Power,
+  RotateCw,
+  Trash2,
+  Plus,
+  TrendingUp,
+  File,
+  AlertCircle,
   Zap,
   Clock,
-  AlertCircle,
-  Plus,
   RefreshCw,
 } from "lucide-react";
 import { MetricsChart } from "@/components/MetricsChart";
+import { FileUpload } from "@/components/FileUpload";
 
 /**
  * Jexactyl detailed page with server management
@@ -142,9 +147,10 @@ export default function JexactylPage() {
 
       {/* Servers List */}
       <Tabs defaultValue="list" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="list">Lista de Servidores</TabsTrigger>
           <TabsTrigger value="metrics">Métricas</TabsTrigger>
+          <TabsTrigger value="files">Arquivos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list" className="space-y-4">
