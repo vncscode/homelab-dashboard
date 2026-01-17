@@ -41,7 +41,22 @@ export const settingsRouter = router({
       .input(
         z.object({
           name: z.string().min(1),
-          domainUrl: z.string().url(),
+          domainUrl: z.string().min(1).refine(
+            (val) => {
+              // Accept URLs with or without protocol
+              if (val.startsWith('http://') || val.startsWith('https://')) {
+                try {
+                  new URL(val);
+                  return true;
+                } catch {
+                  return false;
+                }
+              }
+              // Accept domain-like strings (e.g., example.com, localhost:8080)
+              return /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*(:?\d+)?$/.test(val) || /^localhost(:\d+)?$/.test(val);
+            },
+            { message: 'URL inválida. Use um domínio (ex: example.com) ou URL completa (ex: https://example.com)' }
+          ),
           apiKey: z.string().min(1),
           description: z.string().optional(),
         })
@@ -56,7 +71,22 @@ export const settingsRouter = router({
         z.object({
           id: z.number(),
           name: z.string().min(1).optional(),
-          domainUrl: z.string().url().optional(),
+          domainUrl: z.string().min(1).refine(
+            (val) => {
+              // Accept URLs with or without protocol
+              if (val.startsWith('http://') || val.startsWith('https://')) {
+                try {
+                  new URL(val);
+                  return true;
+                } catch {
+                  return false;
+                }
+              }
+              // Accept domain-like strings (e.g., example.com, localhost:8080)
+              return /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*(:?\d+)?$/.test(val) || /^localhost(:\d+)?$/.test(val);
+            },
+            { message: 'URL inválida. Use um domínio (ex: example.com) ou URL completa (ex: https://example.com)' }
+          ).optional(),
           apiKey: z.string().min(1).optional(),
           description: z.string().optional(),
         })
@@ -138,7 +168,22 @@ export const settingsRouter = router({
     testConnection: protectedProcedure
       .input(
         z.object({
-          domainUrl: z.string().url(),
+          domainUrl: z.string().min(1).refine(
+            (val) => {
+              // Accept URLs with or without protocol
+              if (val.startsWith('http://') || val.startsWith('https://')) {
+                try {
+                  new URL(val);
+                  return true;
+                } catch {
+                  return false;
+                }
+              }
+              // Accept domain-like strings (e.g., example.com, localhost:8080)
+              return /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*(:?\d+)?$/.test(val) || /^localhost(:\d+)?$/.test(val);
+            },
+            { message: 'URL inválida. Use um domínio (ex: example.com) ou URL completa (ex: https://example.com)' }
+          ),
           apiKey: z.string().min(1),
         })
       )
