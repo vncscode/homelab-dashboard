@@ -123,7 +123,14 @@
 - [x] Implementar execução remota de comandos (start, stop, restart)
 - [x] Implementar gerenciamento de arquivos (listagem, upload, download, delete, rename, move)
 - [ ] Desenvolver plugin SSH com autenticação por chave
-- [ ] Implementar gerenciamento completo de torrents com qBittorrent
+- [x] Implementar gerenciamento completo de torrents com qBittorrent
+  - [x] Listagem de torrents
+  - [x] Adicionar torrents (arquivo ou magnet link)
+  - [x] Remover torrents
+  - [x] Pausar/retomar torrents
+  - [x] Gerenciar categorias
+  - [x] Gerenciar limites de velocidade
+  - [x] Obter estatísticas em tempo real
 - [ ] Criar páginas individuais com todas as funcionalidades
 - [ ] Implementar atualização em tempo real com polling/webhooks
 

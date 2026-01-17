@@ -51,19 +51,23 @@ describe("qBittorrent Client", () => {
   let client: QbittorrentClient;
 
   beforeEach(() => {
-    client = new QbittorrentClient("http://localhost:6800", "admin", "admin");
+    client = new QbittorrentClient({
+      url: "http://localhost:6800",
+      username: "admin",
+      password: "admin",
+    });
   });
 
   it("should initialize with correct credentials", () => {
     expect(client).toBeDefined();
   });
 
-  it("should have getTorrents method", () => {
-    expect(client.getTorrents).toBeDefined();
+  it("should have listTorrents method", () => {
+    expect(client.listTorrents).toBeDefined();
   });
 
-  it("should have getTorrent method", () => {
-    expect(client.getTorrent).toBeDefined();
+  it("should have getTorrentDetails method", () => {
+    expect(client.getTorrentDetails).toBeDefined();
   });
 
   it("should have addTorrent method", () => {
@@ -78,8 +82,8 @@ describe("qBittorrent Client", () => {
     expect(client.resumeTorrent).toBeDefined();
   });
 
-  it("should have deleteTorrent method", () => {
-    expect(client.deleteTorrent).toBeDefined();
+  it("should have removeTorrent method", () => {
+    expect(client.removeTorrent).toBeDefined();
   });
 
   it("should have getPreferences method", () => {

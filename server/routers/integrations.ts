@@ -121,18 +121,18 @@ export const integrationsRouter = router({
 
   // qBittorrent Procedures
   qbittorrent: router({
-    getTorrents: protectedProcedure
+    listTorrents: protectedProcedure
       .input(z.object({
         apiUrl: z.string(),
         username: z.string(),
         password: z.string(),
       }))
       .query(async ({ input }) => {
-        const client = new QbittorrentClient(input.apiUrl, input.username, input.password);
-        return await client.getTorrents();
+        const client = new QbittorrentClient({ url: input.apiUrl, username: input.username, password: input.password });
+        return await client.listTorrents();
       }),
 
-    getTorrent: protectedProcedure
+    getTorrentDetails: protectedProcedure
       .input(z.object({
         apiUrl: z.string(),
         username: z.string(),
@@ -140,8 +140,8 @@ export const integrationsRouter = router({
         hash: z.string(),
       }))
       .query(async ({ input }) => {
-        const client = new QbittorrentClient(input.apiUrl, input.username, input.password);
-        return await client.getTorrent(input.hash);
+        const client = new QbittorrentClient({ url: input.apiUrl, username: input.username, password: input.password });
+        return await client.getTorrentDetails(input.hash);
       }),
 
     addTorrent: protectedProcedure
@@ -154,9 +154,9 @@ export const integrationsRouter = router({
         paused: z.boolean().optional(),
       }))
       .mutation(async ({ input }) => {
-        const client = new QbittorrentClient(input.apiUrl, input.username, input.password);
+        const client = new QbittorrentClient({ url: input.apiUrl, username: input.username, password: input.password });
         await client.addTorrent(input.torrentUrl, {
-          savepath: input.savepath,
+          savePath: input.savepath,
           paused: input.paused,
         });
         return { success: true };
@@ -170,7 +170,7 @@ export const integrationsRouter = router({
         hash: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const client = new QbittorrentClient(input.apiUrl, input.username, input.password);
+        const client = new QbittorrentClient({ url: input.apiUrl, username: input.username, password: input.password });
         await client.pauseTorrent(input.hash);
         return { success: true };
       }),
@@ -183,12 +183,12 @@ export const integrationsRouter = router({
         hash: z.string(),
       }))
       .mutation(async ({ input }) => {
-        const client = new QbittorrentClient(input.apiUrl, input.username, input.password);
+        const client = new QbittorrentClient({ url: input.apiUrl, username: input.username, password: input.password });
         await client.resumeTorrent(input.hash);
         return { success: true };
       }),
 
-    deleteTorrent: protectedProcedure
+    removeTorrent: protectedProcedure
       .input(z.object({
         apiUrl: z.string(),
         username: z.string(),
@@ -197,8 +197,8 @@ export const integrationsRouter = router({
         deleteFiles: z.boolean().optional(),
       }))
       .mutation(async ({ input }) => {
-        const client = new QbittorrentClient(input.apiUrl, input.username, input.password);
-        await client.deleteTorrent(input.hash, input.deleteFiles);
+        const client = new QbittorrentClient({ url: input.apiUrl, username: input.username, password: input.password });
+        await client.removeTorrent(input.hash, input.deleteFiles);
         return { success: true };
       }),
   }),
