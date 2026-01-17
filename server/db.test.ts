@@ -138,13 +138,13 @@ describe("Database Operations", () => {
   describe("updateJexactylServer", () => {
     it("should throw error for invalid id", async () => {
       await expect(updateJexactylServer(-1, { name: "Updated" })).rejects.toThrow(
-        "Invalid server id"
+        "Invalid credential id"
       );
     });
 
     it("should throw error for zero id", async () => {
       await expect(updateJexactylServer(0, { name: "Updated" })).rejects.toThrow(
-        "Invalid server id"
+        "Invalid credential id"
       );
     });
 
@@ -158,13 +158,13 @@ describe("Database Operations", () => {
   describe("deleteJexactylServer", () => {
     it("should throw error for invalid id", async () => {
       await expect(deleteJexactylServer(-1)).rejects.toThrow(
-        "Invalid server id"
+        "Invalid credential id"
       );
     });
 
     it("should throw error for zero id", async () => {
       await expect(deleteJexactylServer(0)).rejects.toThrow(
-        "Invalid server id"
+        "Invalid credential id"
       );
     });
   });

@@ -488,3 +488,99 @@ export async function updatePluginStats(pluginId: number, userId: number, key: s
 }
 
 // TODO: add feature queries here as your schema grows.
+
+
+/**
+ * Get Jexactyl credential by ID
+ */
+export async function getJexactylCredentialById(id: number): Promise<typeof jexactylCredentials.$inferSelect | undefined> {
+  if (!Number.isInteger(id) || id <= 0) {
+    return undefined;
+  }
+
+  const db = await getDb();
+  if (!db) return undefined;
+
+  try {
+    const result = await db.select().from(jexactylCredentials).where(eq(jexactylCredentials.id, id));
+    return result[0];
+  } catch (error) {
+    console.error("[Database] Failed to get Jexactyl credential:", error instanceof Error ? error.message : String(error));
+    return undefined;
+  }
+}
+
+/**
+ * Sync Jexactyl servers from API to database
+ */
+export async function syncJexactylServers(
+  credentialId: number,
+  userId: number,
+  servers: InsertJexactylServer[]
+): Promise<void> {
+  if (!Number.isInteger(credentialId) || credentialId <= 0) {
+    throw new Error("Invalid credentialId");
+  }
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new Error("Invalid userId");
+  }
+
+  const db = await getDb();
+  ensureDb(db);
+
+  try {
+    // Delete existing servers for this credential
+    await db.delete(jexactylServers).where(eq(jexactylServers.credentialId, credentialId));
+
+    // Insert new servers
+    if (servers.length > 0) {
+      await db.insert(jexactylServers).values(
+        servers.map(server => ({
+          ...server,
+          credentialId,
+          userId,
+        }))
+      );
+    }
+  } catch (error) {
+    throw new Error(`Failed to sync Jexactyl servers: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+/**
+ * Get synced Jexactyl servers for a credential
+ */
+export async function getJexactylServersByCredential(credentialId: number): Promise<(typeof jexactylServers.$inferSelect)[]> {
+  if (!Number.isInteger(credentialId) || credentialId <= 0) {
+    return [];
+  }
+
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select().from(jexactylServers).where(eq(jexactylServers.credentialId, credentialId));
+  } catch (error) {
+    console.error("[Database] Failed to get Jexactyl servers by credential:", error instanceof Error ? error.message : String(error));
+    return [];
+  }
+}
+
+/**
+ * Get all synced Jexactyl servers for a user
+ */
+export async function getAllJexactylServers(userId: number): Promise<(typeof jexactylServers.$inferSelect)[]> {
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return [];
+  }
+
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select().from(jexactylServers).where(eq(jexactylServers.userId, userId));
+  } catch (error) {
+    console.error("[Database] Failed to get all Jexactyl servers:", error instanceof Error ? error.message : String(error));
+    return [];
+  }
+}

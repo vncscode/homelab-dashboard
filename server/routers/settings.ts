@@ -5,6 +5,10 @@ import {
   createJexactylServer,
   updateJexactylServer,
   deleteJexactylServer,
+  getJexactylCredentialById,
+  getJexactylServersByCredential,
+  getAllJexactylServers,
+  syncJexactylServers,
   getQbittorrentInstances,
   createQbittorrentInstance,
   updateQbittorrentInstance,
@@ -22,6 +26,7 @@ import {
   updateUptimeKumaInstance,
   deleteUptimeKumaInstance,
 } from '../db';
+import { JexactylClient } from '../integrations/jexactyl';
 
 export const settingsRouter = router({
   // Jexactyl Settings - Simplified to domain URL and API key only
@@ -70,6 +75,63 @@ export const settingsRouter = router({
         await deleteJexactylServer(input.id);
         return { success: true };
       }),
+
+    sync: protectedProcedure
+      .input(z.object({ credentialId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const credential = await getJexactylCredentialById(input.credentialId);
+        if (!credential) {
+          throw new Error('Credential not found');
+        }
+
+        if (credential.userId !== ctx.user.id) {
+          throw new Error('Unauthorized');
+        }
+
+        try {
+          const client = new JexactylClient({
+            domain: credential.domainUrl,
+            apiToken: credential.apiKey,
+          });
+
+          const servers = await client.getAllServers();
+          const serverData = servers.map(server => ({
+            identifier: server.attributes.identifier,
+            uuid: server.attributes.uuid,
+            name: server.attributes.name,
+            node: server.attributes.node,
+            description: server.attributes.description || null,
+            status: server.attributes.status,
+            isSuspended: server.attributes.is_suspended ? 1 : 0,
+            isInstalling: server.attributes.is_installing ? 1 : 0,
+            isTransferring: server.attributes.is_transferring ? 1 : 0,
+          }));
+
+          await syncJexactylServers(input.credentialId, ctx.user.id, serverData as any);
+          return { success: true, count: servers.length };
+        } catch (error) {
+          throw new Error(`Failed to sync servers: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }),
+
+    getServers: protectedProcedure
+      .input(z.object({ credentialId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const credential = await getJexactylCredentialById(input.credentialId);
+        if (!credential) {
+          return [];
+        }
+
+        if (credential.userId !== ctx.user.id) {
+          return [];
+        }
+
+        return await getJexactylServersByCredential(input.credentialId);
+      }),
+
+    getAllServers: protectedProcedure.query(async ({ ctx }) => {
+      return await getAllJexactylServers(ctx.user.id);
+    }),
   }),
 
   // qBittorrent Settings
